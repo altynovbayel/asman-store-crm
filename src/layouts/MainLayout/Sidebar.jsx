@@ -1,0 +1,70 @@
+import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Boxes,
+  Truck,
+  Users,
+  Settings,
+  X,
+  Store
+} from 'lucide-react';
+import styles from './Sidebar.module.scss';
+
+const Sidebar = ({ isOpen, onClose }) => {
+  const menuItems = [
+    { path: '/', label: 'Панель управления', icon: LayoutDashboard },
+    { path: '/products', label: 'Товары', icon: ShoppingBag },
+    { path: '/warehouse', label: 'Склад', icon: Boxes },
+    { path: '/suppliers', label: 'Поставщики', icon: Truck },
+    { path: '/users', label: 'Пользователи', icon: Users },
+    { path: '/settings', label: 'Настройки', icon: Settings },
+  ];
+
+  return (
+    <>
+      {/* Mobile Drawer Overlay */}
+      {isOpen && (
+        <div className={styles.overlay} onClick={onClose} />
+      )}
+      
+      <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
+        <div className={styles.logoContainer}>
+          <div className={styles.logoWrapper}>
+            <Store size={24} className={styles.logoIcon} />
+            <span className={styles.logoText}>Asman Store</span>
+          </div>
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close sidebar">
+            <X size={20} />
+          </button>
+        </div>
+        
+        <nav className={styles.navigation}>
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `${styles.navLink} ${isActive ? styles.active : ''}`
+                }
+                onClick={onClose} // close sidebar on route change on mobile
+              >
+                <Icon size={20} className={styles.navIcon} />
+                <span className={styles.navLabel}>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+        
+        <div className={styles.sidebarFooter}>
+          <p className={styles.footerVersion}>CRM v1.0.0</p>
+          <p className={styles.footerCopyright}>© 2026 Asman Store</p>
+        </div>
+      </aside>
+    </>
+  );
+};
+
+export default Sidebar;

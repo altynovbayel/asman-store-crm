@@ -1,0 +1,190 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-family;
+  font-weight: $weight-semibold;
+  border-radius: $radius-md;
+  transition: all $transition-fast;
+  user-select: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none !important;
+  }
+}
+
+// Variants
+.primary {
+  background-color: $color-primary;
+  color: $text-white;
+  box-shadow: 0 2px 4px rgba($color-primary, 0.15);
+
+  &:hover:not(:disabled) {
+    background-color: $color-primary-hover;
+    box-shadow: 0 4px 12px rgba($color-primary, 0.25);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+.secondary {
+  background-color: $color-bg-main;
+  color: $text-main;
+  border-color: $color-border;
+
+  &:hover:not(:disabled) {
+    background-color: darken($color-bg-main, 3%);
+    border-color: $color-border-hover;
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+.success {
+  background-color: $color-success;
+  color: $text-white;
+  box-shadow: 0 2px 4px rgba($color-success, 0.15);
+
+  &:hover:not(:disabled) {
+    background-color: darken($color-success, 6%);
+    box-shadow: 0 4px 12px rgba($color-success, 0.25);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+.danger {
+  background-color: $color-danger;
+  color: $text-white;
+  box-shadow: 0 2px 4px rgba($color-danger, 0.15);
+
+  &:hover:not(:disabled) {
+    background-color: darken($color-danger, 6%);
+    box-shadow: 0 4px 12px rgba($color-danger, 0.25);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+.outline {
+  background-color: transparent;
+  color: $color-primary;
+  border-color: $color-primary;
+
+  &:hover:not(:disabled) {
+    background-color: rgba($color-primary, 0.05);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+.text {
+  background-color: transparent;
+  color: $text-muted;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+
+  &:hover:not(:disabled) {
+    color: $text-main;
+    background-color: rgba($text-main, 0.04);
+  }
+}
+
+// Sizes
+.sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: $font-size-xs;
+  border-radius: $radius-sm;
+}
+
+.md {
+  height: 42px;
+  padding: 0 18px;
+  font-size: $font-size-sm;
+}
+
+.lg {
+  height: 50px;
+  padding: 0 24px;
+  font-size: $font-size-base;
+}
+
+// Icon layouts
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  &.left {
+    margin-right: 8px;
+  }
+  
+  &.right {
+    margin-left: 8px;
+  }
+}
+
+// Loading state and animations
+.loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  
+  .icon, .content {
+    visibility: hidden;
+  }
+}
+
+.spinner {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+  
+  // Custom spinner for light/text buttons
+  .secondary & {
+    border-color: rgba($text-main, 0.1);
+    border-top-color: $text-main;
+  }
+  .outline & {
+    border-color: rgba($color-primary, 0.1);
+    border-top-color: $color-primary;
+  }
+  .text & {
+    border-color: rgba($text-muted, 0.1);
+    border-top-color: $text-muted;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,149 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.header {
+  height: $header-height;
+  @include flex-between;
+  padding: 0 2rem;
+  background-color: rgba($color-bg-card, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid $color-border;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  
+  @include sm {
+    padding: 0 1rem;
+  }
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.menuToggleBtn {
+  display: none;
+  color: $text-main;
+  padding: 6px;
+  border-radius: $radius-md;
+  transition: background-color $transition-fast;
+  
+  &:hover {
+    background-color: darken($color-bg-main, 3%);
+  }
+  
+  @include lg {
+    @include flex-center;
+  }
+}
+
+.pageTitle {
+  font-size: $font-size-xl;
+  font-weight: $weight-bold;
+  color: $text-main;
+  letter-spacing: -0.01em;
+  
+  @include sm {
+    font-size: $font-size-lg;
+  }
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.actionBtn {
+  position: relative;
+  color: $text-muted;
+  padding: 8px;
+  border-radius: $radius-full;
+  transition: all $transition-fast;
+  @include flex-center;
+  
+  &:hover {
+    background-color: darken($color-bg-main, 2%);
+    color: $text-main;
+  }
+  
+  .badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $color-danger;
+    border: 2px solid $color-bg-card;
+  }
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background-color: $color-border;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: $radius-lg;
+  transition: background-color $transition-fast;
+  
+  &:hover {
+    background-color: darken($color-bg-main, 2%);
+    
+    .chevron {
+      color: $text-main;
+    }
+  }
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $color-primary, $color-secondary);
+  color: $text-white;
+  font-weight: $weight-bold;
+  font-size: $font-size-sm;
+  @include flex-center;
+  box-shadow: 0 2px 8px rgba($color-primary, 0.2);
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  
+  @include md {
+    display: none; // hide detailed user info on tablet/mobile to save space
+  }
+}
+
+.userName {
+  font-size: $font-size-sm;
+  font-weight: $weight-semibold;
+  color: $text-main;
+  line-height: 1.2;
+}
+
+.userRole {
+  font-size: 11px;
+  color: $text-muted;
+  line-height: 1.2;
+}
+
+.chevron {
+  color: $text-muted;
+  transition: color $transition-fast;
+  
+  @include md {
+    display: none;
+  }
+}

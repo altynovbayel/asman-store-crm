@@ -1,0 +1,50 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.mainWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
+  padding-left: $sidebar-width; // Push content to the right of the desktop sidebar
+  transition: padding-left $transition-normal;
+  
+  @include lg {
+    padding-left: 0; // Sidebar is overlayed on tablet/mobile, so no padding needed
+  }
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  background-color: $color-bg-main;
+  overflow-y: auto;
+  
+  @include sm {
+    padding: 1rem;
+  }
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeInContent 0.4s ease-out;
+}
+
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

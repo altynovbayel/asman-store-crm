@@ -1,0 +1,103 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(#090d16, 0.4); // Slate-based dark shadow
+  backdrop-filter: blur(6px);
+  @include flex-center;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease-out forwards;
+  padding: 1.5rem;
+}
+
+.modal {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-xl;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  width: 100%;
+  animation: zoomIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  overflow: hidden;
+  border: 1px solid $color-border;
+}
+
+// Sizes
+.sm {
+  max-width: 440px;
+}
+
+.md {
+  max-width: 600px;
+}
+
+.lg {
+  max-width: 800px;
+}
+
+.header {
+  @include flex-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $color-border;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $weight-semibold;
+  color: $text-main;
+}
+
+.closeBtn {
+  color: $text-muted;
+  @include flex-center;
+  padding: 4px;
+  border-radius: $radius-sm;
+  transition: all $transition-fast;
+  
+  &:hover {
+    background-color: rgba($text-main, 0.05);
+    color: $text-main;
+  }
+}
+
+.body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  @include custom-scrollbar(6px);
+}
+
+.footer {
+  @include flex-between;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid $color-border;
+  background-color: lighten($color-bg-main, 1%);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

@@ -1,0 +1,76 @@
+// Design System Variables
+
+// Colors
+$color-primary: #4f46e5; // Indigo
+$color-primary-hover: #4338ca;
+$color-primary-light: #e0e7ff;
+$color-secondary: #0ea5e9; // Sky blue
+$color-success: #10b981; // Emerald green
+$color-warning: #f59e0b; // Amber yellow
+$color-danger: #ef4444; // Rose red
+
+// Neutral Palette
+$color-bg-main: #f8fafc; // Off-white/slate-50
+$color-bg-card: #ffffff;
+$color-bg-sidebar: #0f172a; // Slate-900 for a professional contrast
+$color-border: #e2e8f0; // Slate-200
+$color-border-hover: #cbd5e1; // Slate-300
+
+// Typography Colors
+$text-main: #0f172a; // Slate-900
+$text-muted: #64748b; // Slate-500
+$text-light: #94a3b8; // Slate-400
+$text-white: #ffffff;
+
+// Sidebar Colors (Dark Theme)
+$sidebar-text: #94a3b8;
+$sidebar-text-active: #ffffff;
+$sidebar-bg-active: rgba(255, 255, 255, 0.08);
+$sidebar-border: rgba(255, 255, 255, 0.05);
+
+// Typography
+$font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-base: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-xxl: 1.5rem;
+$font-size-3xl: 1.875rem;
+
+// Font Weights
+$weight-normal: 400;
+$weight-medium: 500;
+$weight-semibold: 600;
+$weight-bold: 700;
+
+// Border Radius
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 16px;
+$radius-full: 9999px;
+
+// Shadows (Premium Glass & Soft Shadows)
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+$shadow-sidebar: 4px 0 24px rgba(0, 0, 0, 0.15);
+
+// Transitions
+$transition-fast: 0.15s ease;
+$transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 0.4s ease;
+
+// Grid & Breakpoints
+$breakpoint-xs: 480px;
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-xxl: 1536px;
+
+// Header / Sidebar Dimensions
+$sidebar-width: 260px;
+$sidebar-collapsed-width: 80px;
+$header-height: 70px;

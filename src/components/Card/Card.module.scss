@@ -1,0 +1,69 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.card {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all $transition-normal;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+
+  &.bordered {
+    border: 1px solid $color-border;
+  }
+
+  &.hoverable {
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: $shadow-lg;
+      border-color: $color-border-hover;
+    }
+  }
+}
+
+.header {
+  @include flex-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid $color-border;
+  gap: 1rem;
+}
+
+.titleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-size: $font-size-base;
+  font-weight: $weight-semibold;
+  color: $text-main;
+}
+
+.subtitle {
+  font-size: $font-size-xs;
+  color: $text-muted;
+}
+
+.extra {
+  display: flex;
+  align-items: center;
+}
+
+.body {
+  padding: 1.5rem;
+  flex: 1;
+  
+  @include custom-scrollbar(6px);
+}
+
+.footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid $color-border;
+  background-color: lighten($color-bg-main, 1%);
+}

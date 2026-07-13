@@ -1,0 +1,186 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.settingsPage {
+  width: 100%;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+  
+  @include lg {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tabsCardWrapper {
+  width: 100%;
+}
+
+.tabsCard {
+  padding: 0.5rem; // tight padding inside tab panel
+}
+
+.tabsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  
+  @include lg {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    @include custom-scrollbar(4px);
+  }
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  width: 100%;
+  text-align: left;
+  font-size: $font-size-sm;
+  font-weight: $weight-medium;
+  color: $text-muted;
+  border-radius: $radius-md;
+  transition: all $transition-fast;
+  
+  @include lg {
+    width: auto;
+    white-space: nowrap;
+  }
+  
+  &:hover {
+    color: $text-main;
+    background-color: rgba($text-main, 0.03);
+  }
+  
+  &.active {
+    color: $color-primary;
+    background-color: rgba($color-primary, 0.08);
+  }
+}
+
+.settingsContentWrapper {
+  width: 100%;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.rowFields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  
+  @include sm {
+    grid-template-columns: 1fr;
+  }
+}
+
+.selectGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  width: 100%;
+}
+
+.selectLabel {
+  font-size: $font-size-xs;
+  font-weight: $weight-medium;
+  color: $text-muted;
+}
+
+.selectInput {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px;
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  transition: all $transition-fast;
+  cursor: pointer;
+  
+  &:hover {
+    border-color: $color-border-hover;
+  }
+  
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+  }
+}
+
+.divider {
+  border: none;
+  border-top: 1px dashed $color-border;
+  margin: 0.5rem 0;
+}
+
+.formActions {
+  @include flex-between;
+  justify-content: flex-end;
+  border-top: 1px solid $color-border;
+  padding-top: 1.25rem;
+}
+
+// Notification Checkboxes
+.checkboxList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxInput {
+  width: 18px;
+  height: 18px;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+  cursor: pointer;
+  accent-color: $color-primary;
+  margin-top: 2px;
+}
+
+.checkboxLabelWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.checkboxLabel {
+  font-size: $font-size-sm;
+  font-weight: $weight-semibold;
+  color: $text-main;
+  line-height: 1.2;
+}
+
+.checkboxDesc {
+  font-size: $font-size-xs;
+  color: $text-muted;
+  line-height: 1.4;
+  margin-top: 4px;
+}
