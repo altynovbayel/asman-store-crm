@@ -5,135 +5,82 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-// Top Controls Block
-.controlsCard {
-  padding: 0;
+  height: calc(100vh - #{$header-height} - 4rem);
   
-  :global(.Card_body__3iX_a) { // Overriding body wrapper padding slightly
-    padding: 1rem 1.5rem;
+  @include lg {
+    height: auto;
+    min-height: calc(100vh - #{$header-height} - 2rem);
   }
 }
 
-.controlsWrapper {
-  @include flex-between;
+// Main page grid layout: Left vertical form, right table
+.mainArea {
+  display: grid;
+  grid-template-columns: 350px 1fr;
   gap: 1.5rem;
-  flex-wrap: wrap;
+  flex: 1;
+  min-height: 0; // Enables items to shrink below their min-content sizes inside flex
+
+  @include lg {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+// Left Panel (Vertical Form wrapper)
+.leftPanel {
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  padding: 1.5rem;
+  box-shadow: $shadow-sm;
+  overflow-y: auto;
+  @include custom-scrollbar(4px);
+  
+  @include lg {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+.verticalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.addBtn {
+  margin-top: 0.5rem;
   width: 100%;
 }
 
-.search {
+// Right Part (Table wrapper)
+.rightPart {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rightTable {
   flex: 1;
-  min-width: 280px;
-}
-
-.filtersWrapper {
+  height: 100%;
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  
-  @include sm {
-    width: 100%;
-    justify-content: space-between;
-    
-    button {
-      flex: 1;
-    }
-  }
-}
+  flex-direction: column;
+  min-height: 0;
 
-.categorySelectWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  
-  @include sm {
+  // Let the internal scroll wrapper expand vertically
+  > div {
     flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    @include custom-scrollbar(6px);
   }
 }
 
-.filterIcon {
-  position: absolute;
-  left: 14px;
-  color: $text-muted;
-  pointer-events: none;
-}
-
-.categorySelect {
-  height: 42px;
-  padding: 0 14px 0 38px;
-  background-color: $color-bg-card;
-  border: 1px solid $color-border;
-  border-radius: $radius-md;
-  color: $text-main;
-  font-family: $font-family;
-  font-size: $font-size-sm;
-  font-weight: $weight-medium;
-  cursor: pointer;
-  transition: all $transition-fast;
-  width: 180px;
-  
-  @include sm {
-    width: 100%;
-  }
-  
-  &:hover {
-    border-color: $color-border-hover;
-  }
-  
-  &:focus {
-    border-color: $color-primary;
-    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
-  }
-}
-
-// Table cell typography
-.sku {
-  font-family: monospace;
-  font-size: $font-size-xs;
-  color: $text-muted;
-  background-color: lighten($color-bg-main, 1%);
-  padding: 2px 6px;
-  border-radius: $radius-sm;
-  border: 1px solid $color-border;
-}
-
-.productName {
-  font-weight: $weight-semibold;
-  color: $text-main;
-}
-
-// Stock Badges
-.stockBadge {
-  display: inline-flex;
-  font-size: $font-size-xs;
-  font-weight: $weight-semibold;
-  padding: 4px 8px;
-  border-radius: $radius-sm;
-}
-
-.inStock {
-  background-color: rgba($color-success, 0.08);
-  color: $color-success;
-}
-
-.lowStock {
-  background-color: rgba($color-warning, 0.08);
-  color: $color-warning;
-}
-
-.outOfStock {
-  background-color: rgba($color-danger, 0.08);
-  color: $color-danger;
-}
-
-// Actions cell buttons
 .actionsCell {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
 }
 
 .deleteBtn {
@@ -144,13 +91,104 @@
   }
 }
 
-// Modal forms layout
-.modalFields {
+// Bottom checkout panel (Save, Totals, Clear)
+.bottomPanel {
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  padding: 1rem 1.5rem;
+  box-shadow: $shadow-md;
   display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
+.bottomLeft {
+  display: flex;
+  align-items: center;
+}
+
+.bottomCenter {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  
+  @include sm {
+    gap: 1rem;
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+.bottomField {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bottomLabel {
+  font-size: $font-size-sm;
+  font-weight: $weight-semibold;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+.bottomValue {
+  font-size: $font-size-base;
+  font-weight: $weight-bold;
+  color: $text-main;
+}
+
+.bottomInput {
+  width: 120px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background-color: $color-bg-main;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  font-weight: $weight-semibold;
+  transition: all $transition-fast;
+  
+  &:hover {
+    border-color: $color-border-hover;
+  }
+  
+  &:focus {
+    border-color: $color-primary;
+    background-color: $color-bg-card;
+  }
+}
+
+.bottomSelect {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background-color: $color-bg-main;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  font-weight: $weight-medium;
+  cursor: pointer;
+  transition: all $transition-fast;
+  
+  &:hover {
+    border-color: $color-border-hover;
+  }
+}
+
+.bottomRight {
+  display: flex;
+  align-items: center;
+}
+
+// Standalone form selector
 .selectGroup {
   display: flex;
   flex-direction: column;

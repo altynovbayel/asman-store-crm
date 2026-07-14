@@ -32,8 +32,8 @@
 }
 
 .iconContainer {
-  width: 46px;
   height: 46px;
+  padding: 0 20px;
   border-radius: $radius-md;
   @include flex-center;
   
@@ -98,14 +98,10 @@
 
 // Main Grid: Orders & Actions
 .mainGrid {
-  display: grid;
-  grid-template-columns: 2.5fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
-  
-  @include xl {
-    grid-template-columns: 1fr;
-  }
+  // display: grid;
+  // grid-template-columns: 2.5fr 1fr;
+  // gap: 1.5rem;
+  // align-items: start;
 }
 
 .ordersCardWrapper {

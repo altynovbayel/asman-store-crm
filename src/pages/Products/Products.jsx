@@ -1,120 +1,85 @@
 import { useState, useMemo } from 'react';
-import { Plus, Filter, Trash2, Edit3 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import Button from '../../components/Button/Button';
-import Card from '../../components/Card/Card';
 import Table from '../../components/Table/Table';
-import Search from '../../components/Search/Search';
-import Modal from '../../components/Modal/Modal';
 import Input from '../../components/Input/Input';
 import styles from './Products.module.scss';
 
 const Products = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('All');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('create'); // 'create' | 'edit'
-  const [currentProduct, setCurrentProduct] = useState({ id: '', name: '', sku: '', category: '', price: '', stock: '' });
-  
-  const [products, setProducts] = useState([
-    { id: 1, name: 'Смартфон iPhone 15 Pro Max', sku: 'IPH15PM-256', category: 'Электроника', price: '680,000 ₸', stock: 15 },
-    { id: 2, name: 'Беспроводные наушники AirPods Pro 2', sku: 'APP2-WRLS', category: 'Аксессуары', price: '125,000 ₸', stock: 48 },
-    { id: 3, name: 'Умные часы Apple Watch Series 9', sku: 'AW9-45ALM', category: 'Электроника', price: '220,000 ₸', stock: 8 },
-    { id: 4, name: 'Ноутбук MacBook Pro 14 M3', sku: 'MBP14-M3-512', category: 'Электроника', price: '950,000 ₸', stock: 0 },
-    { id: 5, name: 'Сетевое зарядное устройство 20W', sku: 'CHG-20W-USB', category: 'Аксессуары', price: '15,000 ₸', stock: 120 },
-    { id: 6, name: 'Кожаный чехол MagSafe для iPhone', sku: 'CS-IP15P-LTH', category: 'Аксессуары', price: '35,000 ₸', stock: 35 }
-  ]);
+  // Left Panel form state
+  const [formState, setFormState] = useState({
+    client: '',
+    contacts: '',
+    barcode: '',
+    product: '',
+    warehouse: 'Основной склад',
+    price: '',
+    discount: '',
+  });
 
-  const categories = ['All', 'Электроника', 'Аксессуары'];
+  // Bottom Panel check state
+  const [bottomState, setBottomState] = useState({
+    grandTotal: '0 сом',
+    paidAmount: '',
+    paymentMethod: 'Наличные'
+  });
 
-  // Filter products based on search query and category
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = categoryFilter === 'All' || product.category === categoryFilter;
-      return matchesSearch && matchesCategory;
+  // Calculate left form total sum
+  const calculatedSum = useMemo(() => {
+    const priceVal = parseFloat(formState.price) || 0;
+    const discountVal = parseFloat(formState.discount) || 0;
+    return Math.max(0, priceVal - discountVal);
+  }, [formState.price, formState.discount]);
+
+  // Calculate bottom change amount
+  const calculatedChange = useMemo(() => {
+    const paid = parseFloat(bottomState.paidAmount) || 0;
+    const total = parseFloat(bottomState.grandTotal.replace(/[^\d.]/g, '')) || 0;
+    return Math.max(0, paid - total);
+  }, [bottomState.paidAmount, bottomState.grandTotal]);
+
+  const handleClearAll = () => {
+    setFormState({
+      client: '',
+      contacts: '',
+      barcode: '',
+      product: '',
+      warehouse: 'Основной склад',
+      price: '',
+      discount: '',
     });
-  }, [products, searchQuery, categoryFilter]);
-
-  // Open modal for creating new product
-  const handleOpenCreate = () => {
-    setCurrentProduct({ name: '', sku: '', category: 'Электроника', price: '', stock: '' });
-    setModalType('create');
-    setIsModalOpen(true);
-  };
-
-  // Open modal for editing existing product
-  const handleOpenEdit = (product) => {
-    // Stripcurrency symbol for numeric inputs
-    const numericPrice = product.price.replace(/[^\d]/g, '');
-    setCurrentProduct({
-      ...product,
-      price: numericPrice
+    setBottomState({
+      grandTotal: '0 сом',
+      paidAmount: '',
+      paymentMethod: 'Наличные'
     });
-    setModalType('edit');
-    setIsModalOpen(true);
   };
 
-  // Save changes (Create or Edit)
-  const handleSaveProduct = () => {
-    if (!currentProduct.name || !currentProduct.sku || !currentProduct.price || currentProduct.stock === '') return;
-
-    const formattedPrice = `${Number(currentProduct.price).toLocaleString('ru-RU')} ₸`;
-    const stockNum = Number(currentProduct.stock);
-
-    if (modalType === 'create') {
-      const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-      setProducts([
-        ...products,
-        {
-          id: newId,
-          name: currentProduct.name,
-          sku: currentProduct.sku,
-          category: currentProduct.category,
-          price: formattedPrice,
-          stock: stockNum
-        }
-      ]);
-    } else {
-      setProducts(products.map(p => 
-        p.id === currentProduct.id 
-          ? { ...p, name: currentProduct.name, sku: currentProduct.sku, category: currentProduct.category, price: formattedPrice, stock: stockNum }
-          : p
-      ));
-    }
-    setIsModalOpen(false);
-  };
-
-  // Delete product
-  const handleDeleteProduct = (id) => {
-    if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
-      setProducts(products.filter(p => p.id !== id));
-    }
+  const handleAddProduct = (e) => {
+    e.preventDefault();
+    if (!formState.product || !formState.price) return;
+    
+    // Set grand total to simulated amount for demonstration
+    setBottomState((prev) => ({
+      ...prev,
+      grandTotal: `${calculatedSum} сом`
+    }));
   };
 
   const columns = [
-    { title: 'Артикул / SKU', dataIndex: 'sku', key: 'sku', render: (sku) => <code className={styles.sku}>{sku}</code> },
-    { title: 'Название товара', dataIndex: 'name', key: 'name', render: (name) => <span className={styles.productName}>{name}</span> },
-    { title: 'Категория', dataIndex: 'category', key: 'category' },
+    { title: 'комплект', dataIndex: 'index', key: 'index', width: '60px', align: 'center' },
+    { title: 'Товар', dataIndex: 'product', key: 'product' },
+    { title: 'Склад', dataIndex: 'warehouse', key: 'warehouse' },
     { title: 'Цена', dataIndex: 'price', key: 'price' },
-    { 
-      title: 'Остаток', 
-      dataIndex: 'stock', 
-      key: 'stock',
-      render: (stock) => {
-        if (stock === 0) return <span className={`${styles.stockBadge} ${styles.outOfStock}`}>Нет в наличии</span>;
-        if (stock < 10) return <span className={`${styles.stockBadge} ${styles.lowStock}`}>{stock} шт (Мало)</span>;
-        return <span className={`${styles.stockBadge} ${styles.inStock}`}>{stock} шт</span>;
-      }
-    },
+    { title: 'Скидка', dataIndex: 'discount', key: 'discount' },
+    { title: 'Сумма', dataIndex: 'sum', key: 'sum' },
     {
-      title: 'Действия',
+      title: '*',
       key: 'actions',
       align: 'right',
-      render: (_, record) => (
+      render: () => (
         <div className={styles.actionsCell}>
-          <Button variant="text" size="sm" icon={Edit3} onClick={() => handleOpenEdit(record)} aria-label="Редактировать" />
-          <Button variant="text" size="sm" icon={Trash2} className={styles.deleteBtn} onClick={() => handleDeleteProduct(record.id)} aria-label="Удалить" />
+          <Button variant="text" size="sm" icon={Trash2} className={styles.deleteBtn} aria-label="Удалить" />
         </div>
       )
     }
@@ -122,99 +87,139 @@ const Products = () => {
 
   return (
     <div className={styles.productsPage}>
-      {/* Top Filter and Search Bar */}
-      <Card className={styles.controlsCard}>
-        <div className={styles.controlsWrapper}>
-          <Search
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск по названию или SKU..."
-            className={styles.search}
-          />
-          
-          <div className={styles.filtersWrapper}>
-            <div className={styles.categorySelectWrapper}>
-              <Filter size={16} className={styles.filterIcon} />
+      {/* Upper content area with Left Panel and Right Table */}
+      <div className={styles.mainArea}>
+        
+        {/* 1. Left Panel (Vertical Form) */}
+        <aside className={styles.leftPanel}>
+          <form onSubmit={handleAddProduct} className={styles.verticalForm}>
+            <Input
+              label="Клиент"
+              placeholder="ФИО клиента"
+              value={formState.client}
+              onChange={(e) => setFormState({ ...formState, client: e.target.value })}
+            />
+            <Input
+              label="Контакты клиента"
+              placeholder="Номер телефона"
+              value={formState.contacts}
+              onChange={(e) => setFormState({ ...formState, contacts: e.target.value })}
+            />
+            <Input
+              label="Штрихкод"
+              placeholder="Сканируйте или введите"
+              value={formState.barcode}
+              onChange={(e) => setFormState({ ...formState, barcode: e.target.value })}
+            />
+            <Input
+              label="Товар"
+              placeholder="Название товара"
+              value={formState.product}
+              onChange={(e) => setFormState({ ...formState, product: e.target.value })}
+            />
+            
+            <div className={styles.selectGroup}>
+              <label className={styles.selectLabel}>Склад</label>
               <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className={styles.categorySelect}
+                className={styles.selectInput}
+                value={formState.warehouse}
+                onChange={(e) => setFormState({ ...formState, warehouse: e.target.value })}
               >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat === 'All' ? 'Все категории' : cat}
-                  </option>
-                ))}
+                <option value="Основной склад">Основной склад</option>
+                <option value="Склад Б">Склад Б</option>
+                <option value="Транзитный склад">Транзитный склад</option>
               </select>
             </div>
-            
-            <Button icon={Plus} onClick={handleOpenCreate}>
-              Добавить товар
+
+            <Input
+              label="Цена (сом)"
+              type="number"
+              placeholder="0.00"
+              value={formState.price}
+              onChange={(e) => setFormState({ ...formState, price: e.target.value })}
+            />
+            <Input
+              label="Скидка (сом)"
+              type="number"
+              placeholder="0.00"
+              value={formState.discount}
+              onChange={(e) => setFormState({ ...formState, discount: e.target.value })}
+            />
+            <Input
+              label="Сумма (сом)"
+              type="number"
+              placeholder="0.00"
+              value={calculatedSum || ''}
+              disabled
+            />
+
+            <Button type="submit" variant="primary" size="lg" className={styles.addBtn}>
+              Добавить
             </Button>
-          </div>
+          </form>
+        </aside>
+
+        {/* 2. Right Part (Blank Table) */}
+        <section className={styles.rightPart}>
+          <Table
+            columns={columns}
+            dataSource={[]}
+            emptyText="Товары не добавлены"
+            className={styles.rightTable}
+          />
+        </section>
+      </div>
+
+      {/* 3. Bottom Panel */}
+      <footer className={styles.bottomPanel}>
+        <div className={styles.bottomLeft}>
+          <Button variant="success" size="md">
+            Сохранить
+          </Button>
         </div>
-      </Card>
 
-      {/* Products Table Card */}
-      <Table 
-        columns={columns} 
-        dataSource={filteredProducts} 
-        emptyText="Товары не найдены"
-      />
+        <div className={styles.bottomCenter}>
+          <div className={styles.bottomField}>
+            <span className={styles.bottomLabel}>Итого:</span>
+            <span className={styles.bottomValue}>{bottomState.grandTotal}</span>
+          </div>
 
-      {/* Create / Edit Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={modalType === 'create' ? 'Добавление товара' : 'Редактирование товара'}
-        onSave={handleSaveProduct}
-        saveText={modalType === 'create' ? 'Создать' : 'Сохранить'}
-        cancelText="Отмена"
-      >
-        <div className={styles.modalFields}>
-          <Input
-            label="Название товара"
-            placeholder="Введите название товара"
-            value={currentProduct.name}
-            onChange={(e) => setCurrentProduct({ ...currentProduct, name: e.target.value })}
-            required
-          />
-          <Input
-            label="Артикул (SKU)"
-            placeholder="Например, IPH15PM-256"
-            value={currentProduct.sku}
-            onChange={(e) => setCurrentProduct({ ...currentProduct, sku: e.target.value })}
-            required
-          />
-          <div className={styles.selectGroup}>
-            <label className={styles.selectLabel}>Категория</label>
+          <div className={styles.bottomField}>
+            <span className={styles.bottomLabel}>Оплачено:</span>
+            <input
+              type="number"
+              className={styles.bottomInput}
+              placeholder="0.00 сом"
+              value={bottomState.paidAmount}
+              onChange={(e) => setBottomState({ ...bottomState, paidAmount: e.target.value })}
+            />
+          </div>
+
+          <div className={styles.bottomField}>
+            <span className={styles.bottomLabel}>Сдача:</span>
+            <span className={styles.bottomValue}>{calculatedChange} сом</span>
+          </div>
+
+          <div className={styles.bottomField}>
+            <span className={styles.bottomLabel}>Способ оплаты:</span>
             <select
-              className={styles.selectInput}
-              value={currentProduct.category}
-              onChange={(e) => setCurrentProduct({ ...currentProduct, category: e.target.value })}
+              className={styles.bottomSelect}
+              value={bottomState.paymentMethod}
+              onChange={(e) => setBottomState({ ...bottomState, paymentMethod: e.target.value })}
             >
-              <option value="Электроника">Электроника</option>
-              <option value="Аксессуары">Аксессуары</option>
+              <option value="Наличные">Наличные</option>
+              <option value="Карта">Карта</option>
+              <option value="QR / Перевод">QR / Перевод</option>
             </select>
           </div>
-          <Input
-            label="Цена товара (₸)"
-            type="number"
-            placeholder="Введите стоимость"
-            value={currentProduct.price}
-            onChange={(e) => setCurrentProduct({ ...currentProduct, price: e.target.value })}
-            required
-          />
-          <Input
-            label="Количество на складе"
-            type="number"
-            placeholder="Введите остаток на складе"
-            value={currentProduct.stock}
-            onChange={(e) => setCurrentProduct({ ...currentProduct, stock: e.target.value })}
-            required
-          />
         </div>
-      </Modal>
+
+        <div className={styles.bottomRight}>
+          <Button variant="outline" size="md" onClick={handleClearAll}>
+            Очистить
+          </Button>
+        </div>
+      </footer>
     </div>
   );
 };

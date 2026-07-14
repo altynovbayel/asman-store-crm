@@ -5,7 +5,6 @@ import {
   DollarSign,
   ShoppingCart,
   Package,
-  Users as UsersIcon,
   Plus
 } from 'lucide-react';
 import Card from '../../components/Card/Card';
@@ -29,26 +28,26 @@ const Dashboard = () => {
   const stats = [
     {
       title: 'Общая выручка',
-      value: '1,248,500 ₸',
+      value: '1,248,500 c',
       change: '+12.5%',
       isPositive: true,
-      icon: DollarSign,
+      icon: 'сом',
       colorClass: styles.blue
     },
     {
-      title: 'Активные заказы',
+      title: 'Продано',
       value: '324 шт.',
       change: '+8.2%',
       isPositive: true,
-      icon: ShoppingCart,
+      icon: 'количество',
       colorClass: styles.green
     },
     {
-      title: 'Всего товаров',
+      title: 'Остаток',
       value: '1,842 тов.',
       change: '-1.5%',
       isPositive: false,
-      icon: Package,
+      icon: 'товары',
       colorClass: styles.purple
     },
   ];
@@ -97,12 +96,11 @@ const Dashboard = () => {
             <Card key={index} bordered hoverable className={styles.statCard}>
               <div className={styles.statHeader}>
                 <div className={`${styles.iconContainer} ${stat.colorClass}`}>
-                  <Icon size={24} />
+                  <span>
+                    {stat.icon}
+                  </span>
                 </div>
-                <span className={`${styles.changeBadge} ${stat.isPositive ? styles.positive : styles.negative}`}>
-                  {stat.isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                  {stat.change}
-                </span>
+      
               </div>
               <div className={styles.statBody}>
                 <h4 className={styles.statValue}>{stat.value}</h4>
@@ -117,31 +115,11 @@ const Dashboard = () => {
       <div className={styles.mainGrid}>
         <div className={styles.ordersCardWrapper}>
           <Card
-            title="Последние заказы"
+            title="История"
             subtitle="Список недавно совершенных транзакций"
-            extra={
-              <Button size="sm" icon={Plus} onClick={() => setIsModalOpen(true)}>
-                Создать заказ
-              </Button>
-            }
+            
           >
             <Table columns={columns} dataSource={orders} />
-          </Card>
-        </div>
-
-        <div className={styles.quickActionsWrapper}>
-          <Card title="Быстрые действия" subtitle="Панель оперативного управления">
-            <div className={styles.actionsList}>
-              <Button variant="outline" className={styles.actionBtn} onClick={() => setIsModalOpen(true)}>
-                Зарегистрировать продажу
-              </Button>
-              <Button variant="secondary" className={styles.actionBtn} onClick={() => window.location.pathname = '/products'}>
-                Перейти в каталог товаров
-              </Button>
-              <Button variant="secondary" className={styles.actionBtn} onClick={() => window.location.pathname = '/warehouse'}>
-                Проверить остатки склада
-              </Button>
-            </div>
           </Card>
         </div>
       </div>
