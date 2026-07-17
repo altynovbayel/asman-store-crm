@@ -3,12 +3,12 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyCduH4K9A87AyR8T_Z3pZ64jwZI4LAMmbM',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'asman-store-crm.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'asman-store-crm',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'asman-store-crm.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '407577760701',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:407577760701:web:df10b7744a8137b92eb8d4'
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID, 
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase

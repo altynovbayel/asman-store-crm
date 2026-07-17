@@ -1,0 +1,76 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.table {
+  width: 100%;
+}
+
+.productName {
+  font-weight: $weight-semibold;
+  color: $text-main;
+}
+
+.typeBadge {
+  display: inline-flex;
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  padding: 4px 8px;
+  border-radius: $radius-sm;
+}
+
+.typeLaptop {
+  background-color: rgba($color-primary, 0.08);
+  color: $color-primary;
+}
+
+.typeAccessory {
+  background-color: rgba($color-secondary, 0.08);
+  color: $color-secondary;
+}
+
+.barcode {
+  font-family: monospace;
+  font-size: $font-size-xs;
+  color: $text-muted;
+  background-color: lighten($color-bg-main, 1%);
+  padding: 2px 6px;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+}
+
+.stockBadge {
+  display: inline-flex;
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  padding: 4px 8px;
+  border-radius: $radius-sm;
+}
+
+.inStock {
+  background-color: rgba($color-success, 0.08);
+  color: $color-success;
+}
+
+.lowStock {
+  background-color: rgba($color-warning, 0.08);
+  color: $color-warning;
+}
+
+.outOfStock {
+  background-color: rgba($color-danger, 0.08);
+  color: $color-danger;
+}
+
+.actionsCell {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.deleteBtn {
+  color: $color-danger !important;
+  
+  &:hover {
+    background-color: rgba($color-danger, 0.05) !important;
+  }
+}

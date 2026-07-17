@@ -1,0 +1,79 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.filtersContainer {
+  @include flex-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.search {
+  flex: 1;
+  min-width: 280px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  
+  @include sm {
+    width: 100%;
+    justify-content: space-between;
+    
+    button {
+      flex: 1;
+    }
+  }
+}
+
+.selectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  
+  @include sm {
+    flex: 1;
+  }
+}
+
+.filterIcon {
+  position: absolute;
+  left: 14px;
+  color: $text-muted;
+  pointer-events: none;
+}
+
+.select {
+  height: 42px;
+  padding: 0 14px 0 38px;
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  font-weight: $weight-medium;
+  cursor: pointer;
+  transition: all $transition-fast;
+  width: 180px;
+  
+  @include sm {
+    width: 100%;
+  }
+  
+  &:hover {
+    border-color: $color-border-hover;
+  }
+  
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+  }
+}
+
+.addBtn {
+  white-space: nowrap;
+}

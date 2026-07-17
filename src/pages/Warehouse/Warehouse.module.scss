@@ -4,6 +4,7 @@
 .warehousePage {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
   height: calc(100vh - #{$header-height} - 4rem);
   
   @include lg {
@@ -12,48 +13,33 @@
   }
 }
 
-.activityCard {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
-  overflow-y: auto; // Vertically scrolls when content overflows
-  overflow-x: hidden;
-}
-
-.activityTable {
-  flex: 1;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
+.controlsCard {
+  padding: 0;
   
-  // Let internal wrapper auto-scroll vertically
-  > div {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-    @include custom-scrollbar(6px);
+  :global(.Card_body__3iX_a) {
+    padding: 1rem 1.5rem;
   }
 }
 
-.sku {
-  font-family: monospace;
-  font-size: $font-size-xs;
+.tableCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.tableCardBody {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0; // seamless table fit
+}
+
+.deleteConfirmText {
+  font-size: $font-size-sm;
   color: $text-muted;
-  background-color: lighten($color-bg-main, 1%);
-  padding: 2px 6px;
-  border-radius: $radius-sm;
-  border: 1px solid $color-border;
-}
-
-.textSuccess {
-  color: $color-success;
-  font-weight: $weight-semibold;
-}
-
-.textDanger {
-  color: $color-danger;
-  font-weight: $weight-semibold;
+  line-height: 1.6;
 }
