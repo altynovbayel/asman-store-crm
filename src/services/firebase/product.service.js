@@ -12,6 +12,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { PRODUCT_TYPES } from '../../constants/productTypes';
 
 const PRODUCTS_COLLECTION = 'products';
 
@@ -62,9 +63,9 @@ export const createProduct = async (productData) => {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     // Laptops specific fields
-    cpu: productData.type === 'laptop' ? (productData.cpu || '').trim() : '',
-    ram: productData.type === 'laptop' ? (productData.ram || '').trim() : '',
-    ssd: productData.type === 'laptop' ? (productData.ssd || '').trim() : ''
+    cpu: productData.type === PRODUCT_TYPES.LAPTOP ? (productData.cpu || '').trim() : '',
+    ram: productData.type === PRODUCT_TYPES.LAPTOP ? (productData.ram || '').trim() : '',
+    ssd: productData.type === PRODUCT_TYPES.LAPTOP ? (productData.ssd || '').trim() : ''
   };
 
   const docRef = await addDoc(productsRef, formattedData);
@@ -84,9 +85,9 @@ export const updateProduct = async (id, productData) => {
     quantity: Math.max(0, parseInt(productData.quantity, 10) || 0),
     price: Math.max(0, parseFloat(productData.price) || 0),
     updatedAt: serverTimestamp(),
-    cpu: productData.type === 'laptop' ? (productData.cpu || '').trim() : '',
-    ram: productData.type === 'laptop' ? (productData.ram || '').trim() : '',
-    ssd: productData.type === 'laptop' ? (productData.ssd || '').trim() : ''
+    cpu: productData.type === PRODUCT_TYPES.LAPTOP ? (productData.cpu || '').trim() : '',
+    ram: productData.type === PRODUCT_TYPES.LAPTOP ? (productData.ram || '').trim() : '',
+    ssd: productData.type === PRODUCT_TYPES.LAPTOP ? (productData.ssd || '').trim() : ''
   };
 
   await updateDoc(docRef, formattedData);

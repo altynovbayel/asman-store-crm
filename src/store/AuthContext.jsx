@@ -9,6 +9,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 
 import Loader from '../components/Loader/Loader';
+import { ROLES } from '../constants/roles';
 
 const AuthContext = createContext(null);
 
@@ -17,8 +18,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Expose role checks
-  const isAdmin = user?.role === 'admin';
-  const isManager = user?.role === 'manager' || user?.role === 'admin'; // admin inherits manager permissions
+  const isAdmin = user?.role === ROLES.ADMIN;
+  const isManager = user?.role === ROLES.MANAGER || user?.role === ROLES.ADMIN; // admin inherits manager permissions
 
   // Listen to auth state changes
   useEffect(() => {

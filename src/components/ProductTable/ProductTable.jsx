@@ -1,6 +1,8 @@
 import { Edit3, Trash2 } from 'lucide-react';
 import Table from '../Table/Table';
 import Button from '../Button/Button';
+import { PRODUCT_TYPES } from '../../constants/productTypes';
+import { formatPrice } from '../../utils/formatPrice';
 import styles from './ProductTable.module.scss';
 
 const ProductTable = ({
@@ -22,8 +24,8 @@ const ProductTable = ({
       dataIndex: 'type',
       key: 'type',
       render: (type) => (
-        <span className={`${styles.typeBadge} ${type === 'laptop' ? styles.typeLaptop : styles.typeAccessory}`}>
-          {type === 'laptop' ? 'Ноутбук' : 'Аксессуар'}
+        <span className={`${styles.typeBadge} ${type === PRODUCT_TYPES.LAPTOP ? styles.typeLaptop : styles.typeAccessory}`}>
+          {type === PRODUCT_TYPES.LAPTOP ? 'Ноутбук' : 'Аксессуар'}
         </span>
       )
     },
@@ -65,7 +67,7 @@ const ProductTable = ({
       title: 'Цена',
       dataIndex: 'price',
       key: 'price',
-      render: (price) => `${Number(price).toLocaleString('ru-RU')} сом`
+      render: (price) => `${formatPrice(price)} сом`
     }
   ];
 

@@ -1,0 +1,117 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.filtersContainer {
+  @include flex-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.search {
+  flex: 2;
+  min-width: 300px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex: 3;
+  justify-content: flex-end;
+  
+  @include lg {
+    justify-content: flex-start;
+    width: 100%;
+    flex: none;
+  }
+  
+  @include sm {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    
+    button {
+      width: 100%;
+    }
+  }
+}
+
+.selectWrapper,
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  
+  @include sm {
+    width: 100%;
+  }
+}
+
+.filterIcon {
+  position: absolute;
+  left: 14px;
+  color: $text-muted;
+  pointer-events: none;
+}
+
+.select {
+  height: 42px;
+  padding: 0 14px 0 38px;
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  font-weight: $weight-medium;
+  cursor: pointer;
+  transition: all $transition-fast;
+  width: 170px;
+  
+  @include sm {
+    width: 100%;
+  }
+  
+  &:hover {
+    border-color: $color-border-hover;
+  }
+  
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+  }
+}
+
+.dateInput {
+  height: 42px;
+  padding: 0 14px 0 38px;
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  font-weight: $weight-medium;
+  width: 160px;
+  outline: none;
+  transition: all $transition-fast;
+
+  @include sm {
+    width: 100%;
+  }
+
+  &:hover {
+    border-color: $color-border-hover;
+  }
+
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+  }
+}
+
+.createBtn {
+  white-space: nowrap;
+}

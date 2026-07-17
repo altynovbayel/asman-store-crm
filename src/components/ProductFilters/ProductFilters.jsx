@@ -1,6 +1,7 @@
 import { Filter, Plus } from 'lucide-react';
 import Search from '../Search/Search';
 import Button from '../Button/Button';
+import { PRODUCT_TYPES } from '../../constants/productTypes';
 import styles from './ProductFilters.module.scss';
 
 const ProductFilters = ({
@@ -29,8 +30,8 @@ const ProductFilters = ({
             className={styles.select}
           >
             <option value="all">Все категории</option>
-            <option value="laptop">Ноутбуки</option>
-            <option value="accessory">Аксессуары</option>
+            <option value={PRODUCT_TYPES.LAPTOP}>Ноутбуки</option>
+            <option value={PRODUCT_TYPES.ACCESSORY}>Аксессуары</option>
           </select>
         </div>
         

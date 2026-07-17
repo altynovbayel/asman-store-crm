@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { Menu, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../../store/AuthContext';
+import { ROLES } from '../../constants/roles';
 import styles from './Header.module.scss';
 
 const Header = ({ onMenuToggle }) => {
@@ -42,9 +43,9 @@ const Header = ({ onMenuToggle }) => {
 
   const getRoleLabel = (role) => {
     switch (role) {
-      case 'admin':
+      case ROLES.ADMIN:
         return 'Администратор';
-      case 'manager':
+      case ROLES.MANAGER:
         return 'Менеджер';
       case 'operator':
         return 'Оператор';

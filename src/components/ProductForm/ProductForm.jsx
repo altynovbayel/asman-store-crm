@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import Input from '../Input/Input';
 import Button from '../Button/Button';
+import { PRODUCT_TYPES } from '../../constants/productTypes';
+import { isRequired, isPositiveNumber, isValidBarcode } from '../../utils/validators';
 import styles from './ProductForm.module.scss';
 
 const ProductForm = ({
@@ -14,7 +16,7 @@ const ProductForm = ({
     if (initialData) {
       return {
         name: initialData.name || '',
-        type: initialData.type || 'laptop',
+        type: initialData.type || PRODUCT_TYPES.LAPTOP,
         cpu: initialData.cpu || '',
         ram: initialData.ram || '',
         ssd: initialData.ssd || '',
@@ -25,7 +27,7 @@ const ProductForm = ({
     }
     return {
       name: '',
-      type: 'laptop',
+      type: PRODUCT_TYPES.LAPTOP,
       cpu: '',
       ram: '',
       ssd: '',
@@ -40,25 +42,25 @@ const ProductForm = ({
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name.trim()) {
+    if (!isRequired(formData.name)) {
       newErrors.name = 'Введите название товара';
     }
     
-    if (!formData.barcode.trim()) {
+    if (!isRequired(formData.barcode)) {
       newErrors.barcode = 'Введите штрихкод';
+    } else if (!isValidBarcode(formData.barcode)) {
+      newErrors.barcode = 'Некорректный формат штрихкода (разрешены латинские буквы, цифры, дефис)';
     }
     
-    const qty = parseInt(formData.quantity, 10);
-    if (formData.quantity === '') {
+    if (!isRequired(formData.quantity)) {
       newErrors.quantity = 'Введите количество';
-    } else if (isNaN(qty) || qty < 0) {
+    } else if (!isPositiveNumber(formData.quantity)) {
       newErrors.quantity = 'Количество должно быть >= 0';
     }
     
-    const priceVal = parseFloat(formData.price);
-    if (formData.price === '') {
+    if (!isRequired(formData.price)) {
       newErrors.price = 'Введите цену';
-    } else if (isNaN(priceVal) || priceVal < 0) {
+    } else if (!isPositiveNumber(formData.price)) {
       newErrors.price = 'Цена должна быть >= 0';
     }
 
@@ -85,8 +87,8 @@ const ProductForm = ({
           onChange={(e) => setFormData({ ...formData, type: e.target.value })}
           disabled={loading || !!initialData} // Lock type on edit mode
         >
-          <option value="laptop">Ноутбук</option>
-          <option value="accessory">Аксессуар</option>
+          <option value={PRODUCT_TYPES.LAPTOP}>Ноутбук</option>
+          <option value={PRODUCT_TYPES.ACCESSORY}>Аксессуар</option>
         </select>
       </div>
 
@@ -101,7 +103,7 @@ const ProductForm = ({
       />
 
       {/* Render laptop specifications conditional inputs */}
-      {formData.type === 'laptop' && (
+      {formData.type === PRODUCT_TYPES.LAPTOP && (
         <div className={styles.specsGrid}>
           <Input
             label="Процессор (CPU)"

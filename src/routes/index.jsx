@@ -3,6 +3,7 @@ import MainLayout from '../layouts/MainLayout/MainLayout';
 import Dashboard from '../pages/Dashboard/Dashboard';
 import Products from '../pages/Products/Products';
 import Warehouse from '../pages/Warehouse/Warehouse';
+import InventoryMovements from '../pages/InventoryMovements/InventoryMovements';
 import Suppliers from '../pages/Suppliers/Suppliers';
 import Users from '../pages/Users/Users';
 import Settings from '../pages/Settings/Settings';
@@ -11,6 +12,7 @@ import NotFound from '../pages/NotFound/NotFound';
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 import Login from '../pages/Login/Login';
 import Forbidden from '../pages/Forbidden/Forbidden';
+import { ROLES } from '../constants/roles';
 
 export const router = createBrowserRouter([
   {
@@ -42,13 +44,17 @@ export const router = createBrowserRouter([
         element: <Warehouse />
       },
       {
+        path: 'movements',
+        element: <InventoryMovements />
+      },
+      {
         path: 'suppliers',
         element: <Suppliers />
       },
       {
         path: 'users',
         element: (
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
             <Users />
           </ProtectedRoute>
         )

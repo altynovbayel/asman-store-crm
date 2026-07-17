@@ -1,0 +1,71 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.table {
+  width: 100%;
+}
+
+.movNumber {
+  font-family: monospace;
+  font-weight: $weight-semibold;
+  color: $color-primary;
+}
+
+.badge {
+  display: inline-flex;
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  padding: 4px 8px;
+  border-radius: $radius-sm;
+}
+
+.badgeIn {
+  background-color: rgba($color-success, 0.08);
+  color: $color-success;
+}
+
+.badgeOut {
+  background-color: rgba($color-danger, 0.08);
+  color: $color-danger;
+}
+
+.badgeReturn {
+  background-color: rgba($color-primary, 0.08);
+  color: $color-primary;
+}
+
+.badgeAdj {
+  background-color: rgba($color-warning, 0.08);
+  color: $color-warning;
+}
+
+.productName {
+  font-weight: $weight-medium;
+  color: $text-main;
+}
+
+.barcode {
+  font-family: monospace;
+  font-size: $font-size-xs;
+  color: $text-muted;
+  background-color: lighten($color-bg-main, 1%);
+  padding: 2px 6px;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+}
+
+.quantity {
+  font-weight: $weight-semibold;
+}
+
+.textSuccess {
+  color: $color-success;
+}
+
+.textDanger {
+  color: $color-danger;
+}
+
+.afterStock {
+  color: $text-main;
+}

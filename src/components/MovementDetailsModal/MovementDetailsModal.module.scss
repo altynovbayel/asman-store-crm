@@ -1,0 +1,100 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.detailsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.detailItem {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+  
+  @include sm {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    align-items: flex-start;
+  }
+}
+
+.label {
+  color: $text-muted;
+  font-weight: $weight-medium;
+}
+
+.value {
+  color: $text-main;
+}
+
+.number {
+  font-family: monospace;
+  color: $color-primary;
+}
+
+.barcode {
+  font-family: monospace;
+  font-size: $font-size-xs;
+  color: $text-muted;
+  background-color: lighten($color-bg-main, 1%);
+  padding: 2px 6px;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+}
+
+.badge {
+  display: inline-flex;
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  padding: 3px 6px;
+  border-radius: $radius-sm;
+}
+
+.badgeIn {
+  background-color: rgba($color-success, 0.08);
+  color: $color-success;
+}
+
+.badgeOut {
+  background-color: rgba($color-danger, 0.08);
+  color: $color-danger;
+}
+
+.badgeReturn {
+  background-color: rgba($color-primary, 0.08);
+  color: $color-primary;
+}
+
+.badgeAdj {
+  background-color: rgba($color-warning, 0.08);
+  color: $color-warning;
+}
+
+.commentBlock {
+  grid-template-columns: 1fr;
+  align-items: flex-start;
+  margin-top: 0.5rem;
+  border-top: 1px solid $color-border;
+  padding-top: 0.75rem;
+}
+
+.commentText {
+  background-color: lighten($color-bg-main, 1%);
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: 0.75rem 1rem;
+  margin-top: 0.375rem;
+  font-size: $font-size-sm;
+  color: $text-main;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  width: 100%;
+}
+
+.noComment {
+  font-style: italic;
+  color: $text-muted;
+}
