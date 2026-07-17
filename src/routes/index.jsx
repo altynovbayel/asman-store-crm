@@ -8,10 +8,22 @@ import Users from '../pages/Users/Users';
 import Settings from '../pages/Settings/Settings';
 import NotFound from '../pages/NotFound/NotFound';
 
+import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
+import Login from '../pages/Login/Login';
+import Forbidden from '../pages/Forbidden/Forbidden';
+
 export const router = createBrowserRouter([
   {
+    path: '/login',
+    element: <Login />
+  },
+  {
     path: '/',
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoute>
+        <MainLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
@@ -35,11 +47,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'users',
-        element: <Users />
+        element: (
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Users />
+          </ProtectedRoute>
+        )
       },
       {
         path: 'settings',
         element: <Settings />
+      },
+      {
+        path: 'forbidden',
+        element: <Forbidden />
       },
       {
         path: '*',
@@ -48,4 +68,5 @@ export const router = createBrowserRouter([
     ]
   }
 ]);
+
 export default router;

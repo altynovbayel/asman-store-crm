@@ -4,20 +4,14 @@ import {
   TrendingDown,
   DollarSign,
   ShoppingCart,
-  Package,
-  Plus
+  Package
 } from 'lucide-react';
 import Card from '../../components/Card/Card';
 import Table from '../../components/Table/Table';
-import Button from '../../components/Button/Button';
-import Modal from '../../components/Modal/Modal';
-import Input from '../../components/Input/Input';
 import styles from './Dashboard.module.scss';
 
 const Dashboard = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newOrder, setNewOrder] = useState({ client: '', amount: '', status: 'В обработке' });
-  const [orders, setOrders] = useState([
+  const [orders] = useState([
     { id: 'ORD-001', client: 'Алишер Махмудов', date: '13.07.2026', amount: '45,000 ₸', status: 'Выполнен' },
     { id: 'ORD-002', client: 'Динара Султанова', date: '12.07.2026', amount: '128,500 ₸', status: 'В обработке' },
     { id: 'ORD-003', client: 'Мирас Кусаинов', date: '11.07.2026', amount: '89,000 ₸', status: 'Выполнен' },
@@ -31,7 +25,7 @@ const Dashboard = () => {
       value: '1,248,500 c',
       change: '+12.5%',
       isPositive: true,
-      icon: 'сом',
+      icon: DollarSign,
       colorClass: styles.blue
     },
     {
@@ -39,7 +33,7 @@ const Dashboard = () => {
       value: '324 шт.',
       change: '+8.2%',
       isPositive: true,
-      icon: 'количество',
+      icon: ShoppingCart,
       colorClass: styles.green
     },
     {
@@ -47,7 +41,7 @@ const Dashboard = () => {
       value: '1,842 тов.',
       change: '-1.5%',
       isPositive: false,
-      icon: 'товары',
+      icon: Package,
       colorClass: styles.purple
     },
   ];
@@ -70,22 +64,6 @@ const Dashboard = () => {
     }
   ];
 
-  const handleCreateOrder = () => {
-    if (!newOrder.client || !newOrder.amount) return;
-    
-    const formattedAmount = `${Number(newOrder.amount).toLocaleString('ru-RU')} ₸`;
-    const today = new Date().toLocaleDateString('ru-RU');
-    const orderId = `ORD-0${orders.length + 1}`;
-    
-    setOrders([
-      { id: orderId, client: newOrder.client, date: today, amount: formattedAmount, status: newOrder.status },
-      ...orders
-    ]);
-    
-    setNewOrder({ client: '', amount: '', status: 'В обработке' });
-    setIsModalOpen(false);
-  };
-
   return (
     <div className={styles.dashboard}>
       {/* Stats Grid */}
@@ -96,11 +74,12 @@ const Dashboard = () => {
             <Card key={index} bordered hoverable className={styles.statCard}>
               <div className={styles.statHeader}>
                 <div className={`${styles.iconContainer} ${stat.colorClass}`}>
-                  <span>
-                    {stat.icon}
-                  </span>
+                  <Icon size={24} />
                 </div>
-      
+                <span className={`${styles.changeBadge} ${stat.isPositive ? styles.positive : styles.negative}`}>
+                  {stat.isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                  {stat.change}
+                </span>
               </div>
               <div className={styles.statBody}>
                 <h4 className={styles.statValue}>{stat.value}</h4>
@@ -121,49 +100,9 @@ const Dashboard = () => {
           >
             <Table columns={columns} dataSource={orders} />
           </Card>
-        </div>
       </div>
-
-      {/* New Order Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Создание нового заказа"
-        onSave={handleCreateOrder}
-        saveText="Создать заказ"
-        cancelText="Отмена"
-      >
-        <div className={styles.modalFields}>
-          <Input
-            label="Имя клиента"
-            placeholder="Введите ФИО клиента"
-            value={newOrder.client}
-            onChange={(e) => setNewOrder({ ...newOrder, client: e.target.value })}
-            required
-          />
-          <Input
-            label="Сумма заказа (₸)"
-            type="number"
-            placeholder="Введите сумму в тенге"
-            value={newOrder.amount}
-            onChange={(e) => setNewOrder({ ...newOrder, amount: e.target.value })}
-            required
-          />
-          <div className={styles.selectGroup}>
-            <label className={styles.selectLabel}>Статус заказа</label>
-            <select
-              className={styles.selectInput}
-              value={newOrder.status}
-              onChange={(e) => setNewOrder({ ...newOrder, status: e.target.value })}
-            >
-              <option value="В обработке">В обработке</option>
-              <option value="Выполнен">Выполнен</option>
-              <option value="Отменен">Отменен</option>
-            </select>
-          </div>
-        </div>
-      </Modal>
     </div>
+  </div>
   );
 };
 

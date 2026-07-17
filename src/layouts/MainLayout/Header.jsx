@@ -1,9 +1,11 @@
 import { useLocation } from 'react-router-dom';
-import { Menu, Bell, ChevronDown } from 'lucide-react';
+import { Menu, Bell, LogOut } from 'lucide-react';
+import { useAuth } from '../../store/AuthContext';
 import styles from './Header.module.scss';
 
 const Header = ({ onMenuToggle }) => {
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   // Map pathname to Page Title
   const getPageTitle = (pathname) => {
@@ -21,12 +23,35 @@ const Header = ({ onMenuToggle }) => {
         return 'Пользователи';
       case '/settings':
         return 'Настройки';
+      case '/forbidden':
+        return 'Доступ ограничен';
       default:
         return 'Страница не найдена';
     }
   };
 
   const title = getPageTitle(location.pathname);
+
+  const handleLogout = async () => {
+    if (window.confirm('Вы уверены, что хотите выйти из системы?')) {
+      await logout();
+    }
+  };
+
+  const avatarLetter = user?.name ? user.name.charAt(0).toUpperCase() : 'U';
+
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case 'admin':
+        return 'Администратор';
+      case 'manager':
+        return 'Менеджер';
+      case 'operator':
+        return 'Оператор';
+      default:
+        return role || 'Сотрудник';
+    }
+  };
 
   return (
     <header className={styles.header}>
@@ -48,17 +73,26 @@ const Header = ({ onMenuToggle }) => {
           <span className={styles.badge} />
         </button>
         
+        <button
+          type="button"
+          className={styles.actionBtn}
+          onClick={handleLogout}
+          aria-label="Logout"
+          title="Выйти из системы"
+        >
+          <LogOut size={20} />
+        </button>
+        
         <div className={styles.divider} />
         
         <div className={styles.userProfile}>
           <div className={styles.avatar}>
-            <span>A</span>
+            <span>{avatarLetter}</span>
           </div>
           <div className={styles.userInfo}>
-            <span className={styles.userName}>Администратор</span>
-            <span className={styles.userRole}>Владелец</span>
+            <span className={styles.userName}>{user?.name || 'Пользователь'}</span>
+            <span className={styles.userRole}>{getRoleLabel(user?.role)}</span>
           </div>
-          <ChevronDown size={16} className={styles.chevron} />
         </div>
       </div>
     </header>
