@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   ShoppingBag,
+  Receipt,
   Boxes,
   History,
   Truck,
@@ -15,7 +16,8 @@ import styles from './Sidebar.module.scss';
 const Sidebar = ({ isOpen, onClose }) => {
   const menuItems = [
     { path: '/', label: 'Панель управления', icon: LayoutDashboard },
-    { path: '/products', label: 'Товары', icon: ShoppingBag },
+    { path: '/sales', label: 'Оформить продажу', icon: ShoppingBag },
+    { path: '/sales-history', label: 'История продаж', icon: Receipt },
     { path: '/warehouse', label: 'Склад', icon: Boxes },
     { path: '/movements', label: 'Движение товаров', icon: History },
     { path: '/suppliers', label: 'Поставщики', icon: Truck },

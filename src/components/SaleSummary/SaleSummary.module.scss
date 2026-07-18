@@ -1,0 +1,102 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.summaryContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  background-color: lighten($color-bg-main, 1%);
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  padding: 1.25rem;
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: $font-size-sm;
+  color: $text-main;
+}
+
+.label {
+  color: $text-muted;
+}
+
+.value {
+  font-weight: $weight-medium;
+}
+
+.discountRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.discountLabel {
+  font-size: $font-size-sm;
+  color: $text-muted;
+  padding-top: 8px;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 1;
+  max-width: 140px;
+}
+
+.discountInput {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  text-align: right;
+  outline: none;
+  transition: all $transition-fast;
+
+  &:hover {
+    border-color: $color-border-hover;
+  }
+
+  &:focus {
+    border-color: $color-primary;
+  }
+}
+
+.inputError {
+  border-color: $color-danger !important;
+}
+
+.errorText {
+  font-size: $font-size-xs;
+  color: $color-danger;
+  margin-top: 0.25rem;
+  text-align: right;
+}
+
+.grandTotalRow {
+  border-top: 1px dashed $color-border;
+  padding-top: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.grandLabel {
+  font-weight: $weight-semibold;
+  font-size: $font-size-sm;
+  color: $text-main;
+}
+
+.grandValue {
+  font-weight: $weight-bold;
+  font-size: $font-size-lg;
+  color: $color-primary;
+}

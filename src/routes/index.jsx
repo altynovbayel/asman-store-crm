@@ -1,7 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout/MainLayout';
 import Dashboard from '../pages/Dashboard/Dashboard';
-import Products from '../pages/Products/Products';
+import Sales from '../pages/Sales/Sales';
+import SalesHistory from '../pages/Sales/SalesHistory';
 import Warehouse from '../pages/Warehouse/Warehouse';
 import InventoryMovements from '../pages/InventoryMovements/InventoryMovements';
 import Suppliers from '../pages/Suppliers/Suppliers';
@@ -36,8 +37,12 @@ export const router = createBrowserRouter([
         element: <Navigate to="/" replace />
       },
       {
-        path: 'products',
-        element: <Products />
+        path: 'sales',
+        element: <Sales />
+      },
+      {
+        path: 'sales-history',
+        element: <SalesHistory />
       },
       {
         path: 'warehouse',

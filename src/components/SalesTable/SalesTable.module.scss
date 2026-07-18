@@ -1,0 +1,32 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.table {
+  width: 100%;
+}
+
+.saleNumber {
+  font-family: monospace;
+  font-weight: $weight-semibold;
+  color: $color-primary;
+}
+
+.customerCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  font-weight: $weight-semibold;
+  color: $text-main;
+}
+
+.phone {
+  font-size: $font-size-xs;
+  color: $text-muted;
+}
+
+.total {
+  color: $color-success;
+}

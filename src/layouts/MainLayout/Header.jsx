@@ -14,12 +14,12 @@ const Header = ({ onMenuToggle }) => {
       case '/':
       case '/dashboard':
         return 'Панель управления';
-      case '/products':
-        return 'Товары';
+      case '/sales':
+        return 'Продажа';
       case '/warehouse':
         return 'Склад';
-      case '/suppliers':
-        return 'Поставщики';
+      case '/sales-history':
+        return 'История продаж';
       case '/users':
         return 'Пользователи';
       case '/settings':

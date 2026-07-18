@@ -1,0 +1,164 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  
+  @include sm {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metaItem {
+  display: flex;
+  font-size: $font-size-sm;
+  line-height: 1.4;
+}
+
+.label {
+  color: $text-muted;
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.value {
+  color: $text-main;
+}
+
+.itemsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionTitle {
+  font-size: $font-size-sm;
+  font-weight: $weight-semibold;
+  color: $text-main;
+  border-bottom: 1px solid $color-border;
+  padding-bottom: 0.375rem;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  background-color: lighten($color-bg-main, 1%);
+  
+  th {
+    padding: 10px 14px;
+    font-size: $font-size-xs;
+    font-weight: $weight-semibold;
+    color: $text-muted;
+    border-bottom: 1px solid $color-border;
+    text-transform: uppercase;
+  }
+  
+  td {
+    padding: 10px 14px;
+    font-size: $font-size-sm;
+    color: $text-main;
+    border-bottom: 1px solid $color-border;
+    vertical-align: middle;
+  }
+  
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.itemName {
+  font-weight: $weight-semibold;
+}
+
+.barcode {
+  font-family: monospace;
+  font-size: $font-size-xs;
+  color: $text-muted;
+}
+
+.typeBadge {
+  display: inline-flex;
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  padding: 2px 6px;
+  border-radius: $radius-sm;
+}
+
+.typeLaptop {
+  background-color: rgba($color-primary, 0.08);
+  color: $color-primary;
+}
+
+.typeAccessory {
+  background-color: rgba($color-secondary, 0.08);
+  color: $color-secondary;
+}
+
+.numCol {
+  text-align: right;
+}
+
+.rowTotal {
+  font-weight: $weight-semibold;
+  color: $text-main;
+}
+
+.totalsSection {
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 280px;
+  font-size: $font-size-sm;
+  color: $text-main;
+  
+  @include sm {
+    width: 100%;
+  }
+}
+
+.totalsRow {
+  display: flex;
+  justify-content: space-between;
+  color: $text-muted;
+}
+
+.discountText {
+  color: $color-danger;
+}
+
+.grandTotal {
+  border-top: 1px solid $color-border;
+  padding-top: 0.75rem;
+  font-weight: $weight-bold;
+  font-size: $font-size-base;
+  color: $color-primary;
+}
+
+.confirmText {
+  font-size: $font-size-sm;
+  color: $text-muted;
+  line-height: 1.6;
+}

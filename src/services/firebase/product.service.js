@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
+import { PRODUCT_STATUS } from '../../constants/productStatus';
 
 const PRODUCTS_COLLECTION = 'products';
 
@@ -57,6 +58,7 @@ export const createProduct = async (productData) => {
   const formattedData = {
     name: productData.name.trim(),
     type: productData.type,
+    status: productData.status || PRODUCT_STATUS.AVAILABLE,
     barcode: productData.barcode.trim(),
     quantity: Math.max(0, parseInt(productData.quantity, 10) || 0),
     price: Math.max(0, parseFloat(productData.price) || 0),

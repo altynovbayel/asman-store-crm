@@ -1,0 +1,155 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.cartContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.emptyCart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  text-align: center;
+}
+
+.emptyText {
+  color: $text-muted;
+  font-size: $font-size-sm;
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  
+  th {
+    padding: 12px 16px;
+    font-size: $font-size-xs;
+    font-weight: $weight-semibold;
+    color: $text-muted;
+    text-transform: uppercase;
+    border-bottom: 1px solid $color-border;
+  }
+  
+  td {
+    padding: 14px 16px;
+    font-size: $font-size-sm;
+    color: $text-main;
+    border-bottom: 1px solid $color-border;
+    vertical-align: middle;
+  }
+}
+
+.qtyHeader {
+  width: 120px;
+  text-align: center;
+}
+
+.actionsHeader {
+  width: 50px;
+}
+
+.nameCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.productName {
+  font-weight: $weight-semibold;
+  color: $text-main;
+}
+
+.stockNotice {
+  font-size: $font-size-xs;
+  color: $color-warning;
+}
+
+.barcode {
+  font-family: monospace;
+  font-size: $font-size-xs;
+  color: $text-muted;
+  background-color: lighten($color-bg-main, 1%);
+  padding: 2px 6px;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+}
+
+.typeBadge {
+  display: inline-flex;
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  padding: 4px 8px;
+  border-radius: $radius-sm;
+}
+
+.typeLaptop {
+  background-color: rgba($color-primary, 0.08);
+  color: $color-primary;
+}
+
+.typeAccessory {
+  background-color: rgba($color-secondary, 0.08);
+  color: $color-secondary;
+}
+
+.quantityControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.qtyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: $radius-sm;
+  border: 1px solid $color-border;
+  background-color: $color-bg-card;
+  color: $text-main;
+  cursor: pointer;
+  transition: all $transition-fast;
+  
+  &:hover:not(:disabled) {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+  
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.qtyValue {
+  font-weight: $weight-semibold;
+  width: 20px;
+  text-align: center;
+}
+
+.price {
+  font-weight: $weight-medium;
+}
+
+.total {
+  color: $color-primary;
+}
+
+.actionsCell {
+  text-align: right;
+}
+
+.deleteBtn {
+  color: $color-danger !important;
+  
+  &:hover {
+    background-color: rgba($color-danger, 0.05) !important;
+  }
+}
