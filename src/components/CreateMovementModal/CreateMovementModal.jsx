@@ -3,7 +3,7 @@ import Modal from '../Modal/Modal';
 import Input from '../Input/Input';
 import Button from '../Button/Button';
 import { MOVEMENT_TYPES, MOVEMENT_TYPE_LABELS } from '../../constants/movementTypes';
-import { getProducts } from '../../services/firebase/product.service';
+import { useProducts } from '../../store/ProductsContext';
 import { isRequired } from '../../utils/validators';
 import styles from './CreateMovementModal.module.scss';
 
@@ -14,8 +14,7 @@ const CreateMovementModal = ({
   loading = false,
   errorMsg = ''
 }) => {
-  const [productsList, setProductsList] = useState([]);
-  const [productsLoading, setProductsLoading] = useState(false);
+  const { products: productsList, loading: productsLoading } = useProducts();
 
   const [formData, setFormData] = useState({
     productId: '',
@@ -26,44 +25,28 @@ const CreateMovementModal = ({
 
   const [errors, setErrors] = useState({});
 
-  // Fetch active products list when modal opens
+  // Reset form and set default product ID when modal opens or products load
   useEffect(() => {
     if (isOpen) {
       let active = true;
-      const load = async () => {
+      const reset = async () => {
         await Promise.resolve();
-        if (!active) return;
-        
-        setFormData({
-          productId: '',
-          type: MOVEMENT_TYPES.IN,
-          quantity: '1',
-          comment: ''
-        });
-        setErrors({});
-        setProductsLoading(true);
-        try {
-          const data = await getProducts();
-          if (active) {
-            setProductsList(data);
-            if (data.length > 0) {
-              setFormData((prev) => ({ ...prev, productId: data[0].id }));
-            }
-          }
-        } catch (err) {
-          console.error('Failed to load products for selection:', err);
-        } finally {
-          if (active) {
-            setProductsLoading(false);
-          }
+        if (active) {
+          setFormData({
+            productId: productsList[0]?.id || '',
+            type: MOVEMENT_TYPES.IN,
+            quantity: '1',
+            comment: ''
+          });
+          setErrors({});
         }
       };
-      load();
+      reset();
       return () => {
         active = false;
       };
     }
-  }, [isOpen]);
+  }, [isOpen, productsList]);
 
   const selectedProduct = productsList.find((p) => p.id === formData.productId);
 

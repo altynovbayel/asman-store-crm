@@ -1,16 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../store/AuthContext';
+import { useToast } from '../../store/ToastContext';
 import Card from '../../components/Card/Card';
 import Loader from '../../components/Loader/Loader';
 import MovementFilters from '../../components/MovementFilters/MovementFilters';
 import MovementTable from '../../components/MovementTable/MovementTable';
 import MovementDetailsModal from '../../components/MovementDetailsModal/MovementDetailsModal';
 import CreateMovementModal from '../../components/CreateMovementModal/CreateMovementModal';
-import { getMovements, createMovement } from '../../services/firebase/inventory.service';
+import { subscribeMovements, createMovement } from '../../services/firebase/inventory.service';
 import styles from './InventoryMovements.module.scss';
 
 const InventoryMovements = () => {
   const { user, isAdmin, isManager } = useAuth();
+  const { showSuccess, showError } = useToast();
 
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,32 +30,24 @@ const InventoryMovements = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  // Fetch movements list from Firestore
-  const fetchMovementsList = async () => {
-    try {
-      setLoading(true);
-      const list = await getMovements();
-      setMovements(list);
-    } catch (err) {
-      console.error('Failed to load inventory movements:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Subscribe to movements in real-time
   useEffect(() => {
-    let active = true;
-    const load = async () => {
-      await Promise.resolve();
-      if (active) {
-        fetchMovementsList();
+    const unsubscribe = subscribeMovements(
+      (data) => {
+        setMovements(data);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Failed to subscribe to inventory movements:', err);
+        showError(err.message || 'Ошибка при загрузке журнала движения товаров.');
+        setLoading(false);
       }
-    };
-    load();
+    );
+
     return () => {
-      active = false;
+      if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [showError]);
 
   // Compute unique managers list dynamically from the loaded logs
   const managersList = useMemo(() => {
@@ -109,10 +103,11 @@ const InventoryMovements = () => {
       };
 
       await createMovement(payload);
-      await fetchMovementsList();
+      showSuccess('Складская операция успешно выполнена.');
       setIsCreateOpen(false);
     } catch (err) {
       setErrorMsg(err.message || 'Ошибка создания складской операции.');
+      showError(err.message || 'Ошибка создания складской операции.');
     } finally {
       setActionLoading(false);
     }

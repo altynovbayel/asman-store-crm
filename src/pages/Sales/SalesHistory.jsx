@@ -1,15 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../store/AuthContext';
+import { useToast } from '../../store/ToastContext';
 import Card from '../../components/Card/Card';
 import Loader from '../../components/Loader/Loader';
 import Search from '../../components/Search/Search';
 import SalesTable from '../../components/SalesTable/SalesTable';
 import SaleDetailsModal from '../../components/SaleDetailsModal/SaleDetailsModal';
-import { getSales, deleteSale } from '../../services/firebase/sales.service';
+import { subscribeSales, deleteSale } from '../../services/firebase/sales.service';
 import styles from './SalesHistory.module.scss';
 
 const SalesHistory = () => {
   const { isAdmin } = useAuth();
+  const { showSuccess, showError } = useToast();
 
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,43 +24,35 @@ const SalesHistory = () => {
   const [selectedSale, setSelectedSale] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  // Fetch sales from Firestore
-  const fetchSalesList = async () => {
-    try {
-      setLoading(true);
-      const list = await getSales();
-      setSales(list);
-    } catch (err) {
-      console.error('Failed to load sales history:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Subscribe to sales updates in real-time
   useEffect(() => {
-    let active = true;
-    const load = async () => {
-      await Promise.resolve();
-      if (active) {
-        fetchSalesList();
+    const unsubscribe = subscribeSales(
+      (data) => {
+        setSales(data);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Failed to subscribe to sales history:', err);
+        showError(err.message || 'Ошибка при загрузке истории продаж.');
+        setLoading(false);
       }
-    };
-    load();
+    );
+
     return () => {
-      active = false;
+      if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [showError]);
 
   // Filter in memory
   const filteredSales = useMemo(() => {
     return sales.filter((sale) => {
-      const query = searchQuery.trim().toLowerCase();
-      if (!query) return true;
+      const queryText = searchQuery.trim().toLowerCase();
+      if (!queryText) return true;
 
       return (
-        sale.saleNumber.toLowerCase().includes(query) ||
-        sale.customerName.toLowerCase().includes(query) ||
-        sale.customerPhone.toLowerCase().includes(query)
+        sale.saleNumber.toLowerCase().includes(queryText) ||
+        sale.customerName.toLowerCase().includes(queryText) ||
+        sale.customerPhone.toLowerCase().includes(queryText)
       );
     });
   }, [sales, searchQuery]);
@@ -72,12 +66,12 @@ const SalesHistory = () => {
     setDeleteLoading(true);
     try {
       await deleteSale(id);
-      await fetchSalesList();
+      showSuccess('Чек продажи успешно удален.');
       setIsDetailsOpen(false);
       setSelectedSale(null);
     } catch (err) {
       console.error('Failed to delete sale:', err);
-      alert('Ошибка при удалении чека продажи.');
+      showError(err.message || 'Ошибка при удалении чека продажи.');
     } finally {
       setDeleteLoading(false);
     }
@@ -108,14 +102,14 @@ const SalesHistory = () => {
         )}
       </Card>
 
-      {/* 3. Detailed view modal */}
+      {/* 3. Sale Details and deletion Modal */}
       <SaleDetailsModal
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
         sale={selectedSale}
-        isAdmin={isAdmin}
-        onDeleteSale={handleDeleteSale}
+        onDelete={handleDeleteSale}
         deleteLoading={deleteLoading}
+        showDeleteButton={isAdmin}
       />
     </div>
   );

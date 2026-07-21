@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Settings as SettingsIcon, Shield, Bell, Save } from 'lucide-react';
+import { useToast } from '../../store/ToastContext';
 import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button';
 import Input from '../../components/Input/Input';
 import styles from './Settings.module.scss';
 
 const Settings = () => {
+  const { showSuccess, showError } = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [loading, setLoading] = useState(false);
   const [generalSettings, setGeneralSettings] = useState({
@@ -32,20 +34,20 @@ const Settings = () => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      alert('Общие настройки сохранены успешно!');
+      showSuccess('Общие настройки сохранены успешно!');
     }, 800);
   };
 
   const handleSaveSecurity = (e) => {
     e.preventDefault();
     if (securitySettings.newPassword !== securitySettings.confirmPassword) {
-      alert('Новые пароли не совпадают!');
+      showError('Новые пароли не совпадают!');
       return;
     }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      alert('Пароль успешно изменен!');
+      showSuccess('Пароль успешно изменен!');
       setSecuritySettings({ currentPassword: '', newPassword: '', confirmPassword: '' });
     }, 800);
   };
@@ -229,7 +231,7 @@ const Settings = () => {
                 </div>
                 
                 <div className={styles.formActions}>
-                  <Button onClick={() => alert('Настройки уведомлений сохранены успешно!')} icon={Save}>
+                  <Button onClick={() => showSuccess('Настройки уведомлений сохранены успешно!')} icon={Save}>
                     Сохранить уведомления
                   </Button>
                 </div>

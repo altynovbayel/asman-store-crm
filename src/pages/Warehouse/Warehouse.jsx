@@ -1,5 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '../../store/AuthContext';
+import { useToast } from '../../store/ToastContext';
+import { useProducts } from '../../store/ProductsContext';
 import Card from '../../components/Card/Card';
 import Loader from '../../components/Loader/Loader';
 import Modal from '../../components/Modal/Modal';
@@ -8,7 +10,6 @@ import ProductFilters from '../../components/ProductFilters/ProductFilters';
 import ProductTable from '../../components/ProductTable/ProductTable';
 import ProductModal from '../../components/ProductModal/ProductModal';
 import {
-  getProducts,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -18,9 +19,9 @@ import styles from './Warehouse.module.scss';
 
 const Warehouse = () => {
   const { isAdmin } = useAuth();
+  const { showSuccess, showError } = useToast();
+  const { products, loading } = useProducts();
   
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -35,33 +36,6 @@ const Warehouse = () => {
   // Delete Confirmation Modal states
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState(null);
-
-  // Fetch products list from Firestore
-  const fetchProductsList = async () => {
-    try {
-      setLoading(true);
-      const list = await getProducts();
-      setProducts(list);
-    } catch (error) {
-      console.error('Failed to load products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    let active = true;
-    const load = async () => {
-      await Promise.resolve();
-      if (active) {
-        fetchProductsList();
-      }
-    };
-    load();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // Filter and search logic in memory
   const filteredProducts = useMemo(() => {
@@ -107,15 +81,17 @@ const Warehouse = () => {
 
       if (isEdit) {
         await updateProduct(editingProduct.id, formData);
+        showSuccess('Товар успешно обновлен');
       } else {
         await createProduct(formData);
+        showSuccess('Товар успешно создан');
       }
 
-      await fetchProductsList();
       setIsModalOpen(false);
       setEditingProduct(null);
     } catch (err) {
       setErrorMsg(err.message || 'Не удалось сохранить товар.');
+      showError(err.message || 'Не удалось сохранить товар.');
     } finally {
       setActionLoading(false);
     }
@@ -133,12 +109,12 @@ const Warehouse = () => {
     setActionLoading(true);
     try {
       await deleteProduct(idToDelete);
-      await fetchProductsList();
+      showSuccess('Товар успешно удален');
       setIsDeleteOpen(false);
       setIdToDelete(null);
     } catch (err) {
       console.error('Delete error:', err);
-      alert('Ошибка при удалении товара');
+      showError(err.message || 'Ошибка при удалении товара');
     } finally {
       setActionLoading(false);
     }

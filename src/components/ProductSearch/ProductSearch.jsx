@@ -1,30 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search as SearchIcon, Laptop, Package } from 'lucide-react';
-import { getProducts } from '../../services/firebase/product.service';
+import { useProducts } from '../../store/ProductsContext';
 import { PRODUCT_STATUS } from '../../constants/productStatus';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
 import { formatPrice } from '../../utils/formatPrice';
 import styles from './ProductSearch.module.scss';
 
 const ProductSearch = ({ onSelectProduct }) => {
-  const [products, setProducts] = useState([]);
+  const { products, loading } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const wrapperRef = useRef(null);
-
-  // Fetch products on focus
-  const loadProducts = async () => {
-    setLoading(true);
-    try {
-      const list = await getProducts();
-      setProducts(list);
-    } catch (err) {
-      console.error('Failed to load products for search:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     // Click outside handler to close dropdown
@@ -39,9 +25,6 @@ const ProductSearch = ({ onSelectProduct }) => {
 
   const handleFocus = () => {
     setIsOpen(true);
-    if (products.length === 0) {
-      loadProducts();
-    }
   };
 
   // Filter in-memory products
