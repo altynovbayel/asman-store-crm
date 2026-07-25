@@ -12,7 +12,7 @@ import styles from './SalesHistory.module.scss';
 const SalesHistory = () => {
   const { isAdmin } = useAuth();
   const { showSuccess, showError } = useToast();
-
+  
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState(false);

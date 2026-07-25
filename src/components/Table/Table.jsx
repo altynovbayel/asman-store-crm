@@ -9,10 +9,10 @@ const Table = ({
   emptyText = 'Данные не найдены',
   className = '',
   rowKey = (record) => record.id || record.key,
-  ...props
+  onRowClick
 }) => {
   return (
-    <div className={`${styles.tableContainer} ${className}`} {...props}>
+    <div className={`${styles.tableContainer} ${className}`}>
       <div className={styles.tableScrollWrapper}>
         <table className={styles.table}>
           <thead>
@@ -45,8 +45,13 @@ const Table = ({
             ) : (
               dataSource.map((record, rowIndex) => {
                 const key = typeof rowKey === 'function' ? rowKey(record) : record[rowKey] || rowIndex;
+                const isClickable = typeof onRowClick === 'function';
                 return (
-                  <tr key={key}>
+                  <tr
+                    key={key}
+                    onClick={isClickable ? () => onRowClick(record) : undefined}
+                    className={isClickable ? styles.clickableRow : ''}
+                  >
                     {columns.map((col, colIndex) => {
                       const value = record[col.dataIndex];
                       const rendered = col.render ? col.render(value, record, rowIndex) : value;

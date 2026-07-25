@@ -5,6 +5,7 @@ import { formatDate } from '../../utils/formatDate';
 import { formatPrice } from '../../utils/formatPrice';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
 import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
+import WarrantyModal from '../../pages/Warranty/components/WarrantyModal';
 import styles from './SaleDetailsModal.module.scss';
 
 const SaleDetailsModal = ({
@@ -16,6 +17,7 @@ const SaleDetailsModal = ({
   deleteLoading = false
 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isWarrantyOpen, setIsWarrantyOpen] = useState(false);
 
   if (!sale) return null;
 
@@ -47,6 +49,12 @@ const SaleDetailsModal = ({
                 Удалить чек
               </Button>
             )}
+            <Button
+              variant="primary"
+              onClick={() => setIsWarrantyOpen(true)}
+            >
+              Печать гарантии
+            </Button>
             <Button variant="secondary" onClick={onClose}>
               Закрыть
             </Button>
@@ -189,6 +197,12 @@ const SaleDetailsModal = ({
           Это действие полностью сотрет историю продажи из системы. Складские запасы при этом автоматически возвращены не будут.
         </p>
       </Modal>
+
+      <WarrantyModal
+        isOpen={isWarrantyOpen}
+        onClose={() => setIsWarrantyOpen(false)}
+        sale={sale}
+      />
     </>
   );
 };
