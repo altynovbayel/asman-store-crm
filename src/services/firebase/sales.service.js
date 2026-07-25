@@ -105,11 +105,13 @@ export const createSale = async (saleData) => {
     const {
       customerName,
       customerPhone,
+      paymentMethod,
+      comment,
       managerId,
       managerName,
       items = [],
       subtotal,
-      discount,
+      totalDiscount,
       grandTotal
     } = saleData;
 
@@ -118,16 +120,24 @@ export const createSale = async (saleData) => {
       throw new Error('Имя клиента и номер телефона обязательны.');
     }
 
+    if (!paymentMethod) {
+      throw new Error('Выберите способ оплаты.');
+    }
+
     if (items.length === 0) {
       throw new Error('Корзина пуста.');
     }
 
-    if (parseFloat(discount) < 0) {
-      throw new Error('Скидка не может быть отрицательной.');
-    }
+    for (const item of items) {
+      const price = parseFloat(item.unitPrice) || 0;
+      const disc = parseFloat(item.itemDiscount) || 0;
 
-    if (parseFloat(discount) > parseFloat(subtotal)) {
-      throw new Error('Скидка не может превышать промежуточный итог.');
+      if (disc < 0) {
+        throw new Error(`Скидка для товара "${item.productName}" не может быть отрицательной.`);
+      }
+      if (disc > price) {
+        throw new Error(`Скидка для товара "${item.productName}" не может превышать стоимость товара.`);
+      }
     }
 
     const counterRef = doc(db, 'counters', 'sales');
@@ -185,11 +195,13 @@ export const createSale = async (saleData) => {
         saleNumber,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
+        paymentMethod,
+        comment: (comment || '').trim(),
         managerId,
         managerName,
         items,
         subtotal: parseFloat(subtotal) || 0,
-        discount: parseFloat(discount) || 0,
+        totalDiscount: parseFloat(totalDiscount) || 0,
         grandTotal: parseFloat(grandTotal) || 0,
         createdAt: serverTimestamp()
       };

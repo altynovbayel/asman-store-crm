@@ -1,6 +1,7 @@
 import Table from '../Table/Table';
 import { formatDate } from '../../utils/formatDate';
 import { formatPrice } from '../../utils/formatPrice';
+import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
 import styles from './SalesTable.module.scss';
 
 const SalesTable = ({
@@ -32,11 +33,17 @@ const SalesTable = ({
       key: 'managerName'
     },
     {
+      title: 'Способ оплаты',
+      dataIndex: 'paymentMethod',
+      key: 'paymentMethod',
+      render: (method) => PAYMENT_METHOD_LABELS[method] || '—'
+    },
+    {
       title: 'Позиций',
       dataIndex: 'items',
       key: 'items',
       render: (items) => {
-        const totalQty = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const totalQty = items ? items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
         return `${totalQty} шт`;
       }
     },

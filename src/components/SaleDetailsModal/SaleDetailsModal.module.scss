@@ -40,6 +40,31 @@
   color: $text-main;
 }
 
+.commentSection {
+  background-color: lighten($color-bg-main, 1%);
+  border: 1px dashed $color-border;
+  border-radius: $radius-md;
+  padding: 10px 14px;
+  margin-top: -0.5rem;
+}
+
+.commentLabel {
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  color: $text-muted;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.commentContent {
+  font-size: $font-size-sm;
+  color: $text-main;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .itemsSection {
   display: flex;
   flex-direction: column;

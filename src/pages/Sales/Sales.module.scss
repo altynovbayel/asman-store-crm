@@ -69,6 +69,79 @@
   box-shadow: $shadow-sm;
 }
 
+.paymentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sectionTitle {
+  font-size: $font-size-base;
+  font-weight: $weight-semibold;
+  color: $text-main;
+  margin: 0;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  color: $text-muted;
+  text-transform: uppercase;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: $font-size-sm;
+  color: $text-main;
+  cursor: pointer;
+}
+
+.radioInput {
+  accent-color: $color-primary;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid $color-border;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  color: $text-main;
+  background-color: $color-bg-card;
+  font-family: $font-family;
+  resize: vertical;
+  transition: border-color $transition-fast;
+  
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+  }
+}
+
+.errorText {
+  color: $color-danger;
+  font-size: $font-size-xs;
+  margin-top: 4px;
+  display: block;
+}
+
 .rightPart {
   height: 100%;
   min-height: 0;

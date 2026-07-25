@@ -3,10 +3,8 @@ import styles from './SaleSummary.module.scss';
 
 const SaleSummary = ({
   subtotal = 0,
-  discount = '0',
-  onDiscountChange,
-  grandTotal = 0,
-  error = ''
+  totalDiscount = 0,
+  grandTotal = 0
 }) => {
   return (
     <div className={styles.summaryContainer}>
@@ -15,21 +13,11 @@ const SaleSummary = ({
         <span className={styles.value}>{formatPrice(subtotal)} сом</span>
       </div>
 
-      <div className={styles.discountRow}>
-        <label className={styles.discountLabel} htmlFor="summary-discount">Скидка (сом):</label>
-        <div className={styles.inputContainer}>
-          <input
-            id="summary-discount"
-            type="number"
-            step="1"
-            min="0"
-            className={`${styles.discountInput} ${error ? styles.inputError : ''}`}
-            placeholder="0.00 сом"
-            value={discount}
-            onChange={(e) => onDiscountChange(e.target.value)}
-          />
-          {error && <span className={styles.errorText}>{error}</span>}
-        </div>
+      <div className={styles.row}>
+        <span className={styles.label}>Общая скидка:</span>
+        <span className={`${styles.value} ${styles.discountText}`}>
+          {totalDiscount > 0 ? `-${formatPrice(totalDiscount)} сом` : '0 сом'}
+        </span>
       </div>
 
       <div className={`${styles.row} ${styles.grandTotalRow}`}>

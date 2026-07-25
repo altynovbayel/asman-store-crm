@@ -3,8 +3,13 @@ import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
 import { createSale } from '../services/firebase/sales.service';
 import { PRODUCT_TYPES } from '../constants/productTypes';
+import { PAYMENT_METHODS } from '../constants/paymentMethods';
 import { isRequired } from '../utils/validators';
-import { calculateSaleSummary } from '../utils/saleCalculator';
+import {
+  calculateSaleSummary,
+  calculateItemDiscount,
+  calculateItemTotal
+} from '../utils/saleCalculator';
 
 export const useCart = () => {
   const { user } = useAuth();
@@ -13,7 +18,8 @@ export const useCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [discount, setDiscount] = useState('0');
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.CASH);
+  const [comment, setComment] = useState('');
   
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -38,7 +44,9 @@ export const useCart = () => {
         productType: product.type,
         barcode: product.barcode,
         quantity: 1,
-        price: product.price,
+        unitPrice: product.price,
+        itemDiscount: 0,
+        finalUnitPrice: product.price,
         total: product.price,
         stockLimit: 1
       };
@@ -53,10 +61,12 @@ export const useCart = () => {
         }
         
         const updatedItems = [...cartItems];
+        const newQty = item.quantity + 1;
+        const total = calculateItemTotal(item.unitPrice, item.itemDiscount, newQty);
         updatedItems[existingIndex] = {
           ...item,
-          quantity: item.quantity + 1,
-          total: (item.quantity + 1) * item.price
+          quantity: newQty,
+          total
         };
         setCartItems(updatedItems);
       } else {
@@ -66,7 +76,9 @@ export const useCart = () => {
           productType: product.type,
           barcode: product.barcode,
           quantity: 1,
-          price: product.price,
+          unitPrice: product.price,
+          itemDiscount: 0,
+          finalUnitPrice: product.price,
           total: product.price,
           stockLimit: product.quantity
         };
@@ -79,10 +91,30 @@ export const useCart = () => {
     const updated = cartItems.map((item) => {
       if (item.productId === productId) {
         const qty = Math.min(item.stockLimit, Math.max(1, newQty));
+        const total = calculateItemTotal(item.unitPrice, item.itemDiscount, qty);
         return {
           ...item,
           quantity: qty,
-          total: qty * item.price
+          total
+        };
+      }
+      return item;
+    });
+    setCartItems(updated);
+  };
+
+  const handleUpdateItemDiscount = (productId, discountInput) => {
+    const updated = cartItems.map((item) => {
+      if (item.productId === productId) {
+        const unitPrice = item.unitPrice;
+        const itemDiscount = calculateItemDiscount(unitPrice, discountInput);
+        const finalUnitPrice = Math.max(0, unitPrice - itemDiscount);
+        const total = calculateItemTotal(unitPrice, itemDiscount, item.quantity);
+        return {
+          ...item,
+          itemDiscount,
+          finalUnitPrice,
+          total
         };
       }
       return item;
@@ -96,17 +128,18 @@ export const useCart = () => {
 
   // Calculations using saleCalculator
   const summary = useMemo(() => {
-    return calculateSaleSummary(cartItems, discount);
-  }, [cartItems, discount]);
+    return calculateSaleSummary(cartItems);
+  }, [cartItems]);
 
-  const { subtotal, grandTotal, discountError } = summary;
+  const { subtotal, totalDiscount, grandTotal } = summary;
 
   const handleClearAll = () => {
     if (window.confirm('Вы действительно хотите очистить корзину и поля ввода?')) {
       setCartItems([]);
       setCustomerName('');
       setCustomerPhone('');
-      setDiscount('0');
+      setPaymentMethod(PAYMENT_METHODS.CASH);
+      setComment('');
       setErrors({});
       setErrorMsg('');
       setSuccessMsg('');
@@ -124,9 +157,19 @@ export const useCart = () => {
     if (cartItems.length === 0) {
       errs.cart = 'Добавьте хотя бы один товар в корзину';
     }
-    if (discountError) {
-      errs.discount = discountError;
+    if (!paymentMethod) {
+      errs.paymentMethod = 'Выберите способ оплаты';
     }
+
+    // Individual item discount validations
+    cartItems.forEach((item) => {
+      const disc = parseFloat(item.itemDiscount) || 0;
+      if (disc < 0) {
+        errs[`discount-${item.productId}`] = 'Скидка не может быть меньше 0';
+      } else if (disc > item.unitPrice) {
+        errs[`discount-${item.productId}`] = 'Скидка не может превышать стоимость товара';
+      }
+    });
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -143,11 +186,23 @@ export const useCart = () => {
       const salePayload = {
         customerName,
         customerPhone,
+        paymentMethod,
+        comment,
         managerId: user.uid,
         managerName: user.name || user.email,
-        items: cartItems,
+        items: cartItems.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          productType: item.productType,
+          barcode: item.barcode,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          itemDiscount: item.itemDiscount,
+          finalUnitPrice: item.finalUnitPrice,
+          total: item.total
+        })),
         subtotal,
-        discount: parseFloat(discount) || 0,
+        totalDiscount,
         grandTotal
       };
 
@@ -158,7 +213,8 @@ export const useCart = () => {
       setCartItems([]);
       setCustomerName('');
       setCustomerPhone('');
-      setDiscount('0');
+      setPaymentMethod(PAYMENT_METHODS.CASH);
+      setComment('');
       setErrors({});
     } catch (err) {
       console.error(err);
@@ -175,17 +231,20 @@ export const useCart = () => {
     setCustomerName,
     customerPhone,
     setCustomerPhone,
-    discount,
-    setDiscount,
+    paymentMethod,
+    setPaymentMethod,
+    comment,
+    setComment,
     errors,
     loading,
     errorMsg,
     successMsg,
     subtotal,
+    totalDiscount,
     grandTotal,
-    discountError,
     handleSelectProduct,
     handleUpdateQuantity,
+    handleUpdateItemDiscount,
     handleRemoveItem,
     handleClearAll,
     handleCompleteSale

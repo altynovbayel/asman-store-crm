@@ -7,7 +7,9 @@ import styles from './Cart.module.scss';
 const Cart = ({
   cartItems = [],
   onUpdateQuantity,
-  onRemoveItem
+  onUpdateItemDiscount,
+  onRemoveItem,
+  errors = {}
 }) => {
   if (cartItems.length === 0) {
     return (
@@ -26,6 +28,8 @@ const Cart = ({
             <th>Штрихкод</th>
             <th>Тип</th>
             <th>Цена</th>
+            <th className={styles.discountCell}>Скидка (ед)</th>
+            <th>Цена со скидкой</th>
             <th className={styles.qtyHeader}>Кол-во</th>
             <th>Сумма</th>
             <th className={styles.actionsHeader}></th>
@@ -36,6 +40,11 @@ const Cart = ({
             const isLaptop = item.productType === PRODUCT_TYPES.LAPTOP;
             // Disable Plus if accessory reaches database stock limit
             const isPlusDisabled = !isLaptop && item.quantity >= item.stockLimit;
+
+            const itemPrice = item.unitPrice !== undefined ? item.unitPrice : item.price;
+            const itemDiscount = item.itemDiscount !== undefined ? item.itemDiscount : 0;
+            const finalUnitPrice = item.finalUnitPrice !== undefined ? item.finalUnitPrice : itemPrice;
+            const discountError = errors[`discount-${item.productId}`];
 
             return (
               <tr key={item.productId} className={styles.cartRow}>
@@ -58,7 +67,25 @@ const Cart = ({
                   </span>
                 </td>
                 <td>
-                  <span className={styles.price}>{formatPrice(item.price)} сом</span>
+                  <span className={styles.price}>{formatPrice(itemPrice)} сом</span>
+                </td>
+                <td>
+                  <div className={styles.discountInputWrapper}>
+                    <input
+                      type="number"
+                      min="0"
+                      max={itemPrice}
+                      step="1"
+                      className={`${styles.discountInput} ${discountError ? styles.inputError : ''}`}
+                      value={itemDiscount === 0 ? '' : itemDiscount}
+                      placeholder="0"
+                      onChange={(e) => onUpdateItemDiscount(item.productId, e.target.value)}
+                    />
+                    {discountError && <span className={styles.errorText}>{discountError}</span>}
+                  </div>
+                </td>
+                <td>
+                  <span className={styles.finalPrice}>{formatPrice(finalUnitPrice)} сом</span>
                 </td>
                 <td>
                   <div className={styles.quantityControls}>
