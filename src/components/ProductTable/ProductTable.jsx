@@ -64,10 +64,19 @@ const ProductTable = ({
       }
     },
     {
-      title: 'Цена',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price) => `${formatPrice(price)} сом`
+      title: 'Цена закупки',
+      dataIndex: 'purchasePrice',
+      key: 'purchasePrice',
+      render: (purchasePrice) => purchasePrice !== undefined && purchasePrice !== null ? `${formatPrice(purchasePrice)} сом` : '—'
+    },
+    {
+      title: 'Цена продажи',
+      dataIndex: 'sellingPrice',
+      key: 'sellingPrice',
+      render: (sellingPrice, record) => {
+        const price = sellingPrice !== undefined ? sellingPrice : record.price;
+        return `${formatPrice(price)} сом`;
+      }
     }
   ];
 

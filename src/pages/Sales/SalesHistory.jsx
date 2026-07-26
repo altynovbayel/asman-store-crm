@@ -76,7 +76,7 @@ const SalesHistory = () => {
       setDeleteLoading(false);
     }
   };
-
+  
   return (
     <div className={styles.historyPage}>
       {/* 1. Search filter Card */}
@@ -110,6 +110,7 @@ const SalesHistory = () => {
         onDelete={handleDeleteSale}
         deleteLoading={deleteLoading}
         showDeleteButton={isAdmin}
+        isAdmin={isAdmin}
       />
     </div>
   );

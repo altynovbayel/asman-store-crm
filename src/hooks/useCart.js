@@ -1,14 +1,13 @@
-import { useState, useMemo } from 'react';
-import { useAuth } from '../store/AuthContext';
-import { useToast } from '../store/ToastContext';
+import { useState, useMemo, useEffect } from 'react';
 import { createSale } from '../services/firebase/sales.service';
 import { PRODUCT_TYPES } from '../constants/productTypes';
 import { PAYMENT_METHODS } from '../constants/paymentMethods';
-import { isRequired } from '../utils/validators';
+import { useAuth } from '../store/AuthContext';
+import { useToast } from '../store/ToastContext';
 import {
-  calculateSaleSummary,
   calculateItemDiscount,
-  calculateItemTotal
+  calculateItemTotal,
+  calculateSaleSummary
 } from '../utils/saleCalculator';
 
 export const useCart = () => {
@@ -20,17 +19,27 @@ export const useCart = () => {
   const [customerPhone, setCustomerPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.CASH);
   const [comment, setComment] = useState('');
-  
-  const [errors, setErrors] = useState({});
+
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Cart operations
+  // Auto-clear success message
+  useEffect(() => {
+    if (successMsg) {
+      const timer = setTimeout(() => setSuccessMsg(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg]);
+
   const handleSelectProduct = (product) => {
     setErrorMsg('');
     setSuccessMsg('');
     const existingIndex = cartItems.findIndex((item) => item.productId === product.id);
+
+    const sellingPrice = product.sellingPrice !== undefined ? product.sellingPrice : product.price || 0;
+    const purchasePrice = product.purchasePrice || 0;
 
     if (product.type === PRODUCT_TYPES.LAPTOP) {
       if (existingIndex > -1) {
@@ -44,11 +53,16 @@ export const useCart = () => {
         productType: product.type,
         barcode: product.barcode,
         quantity: 1,
-        unitPrice: product.price,
+        unitPrice: sellingPrice,
         itemDiscount: 0,
-        finalUnitPrice: product.price,
-        total: product.price,
-        stockLimit: 1
+        finalUnitPrice: sellingPrice,
+        total: sellingPrice,
+        stockLimit: 1,
+        // Purchase price compatibility
+        purchasePrice,
+        sellingPrice,
+        salePrice: sellingPrice,
+        discount: 0
       };
       setCartItems((prev) => [...prev, newItem]);
     } else {
@@ -76,11 +90,16 @@ export const useCart = () => {
           productType: product.type,
           barcode: product.barcode,
           quantity: 1,
-          unitPrice: product.price,
+          unitPrice: sellingPrice,
           itemDiscount: 0,
-          finalUnitPrice: product.price,
-          total: product.price,
-          stockLimit: product.quantity
+          finalUnitPrice: sellingPrice,
+          total: sellingPrice,
+          stockLimit: product.quantity,
+          // Purchase price compatibility
+          purchasePrice,
+          sellingPrice,
+          salePrice: sellingPrice,
+          discount: 0
         };
         setCartItems((prev) => [...prev, newItem]);
       }
@@ -114,7 +133,8 @@ export const useCart = () => {
           ...item,
           itemDiscount,
           finalUnitPrice,
-          total
+          total,
+          discount: itemDiscount
         };
       }
       return item;
@@ -142,55 +162,49 @@ export const useCart = () => {
       setComment('');
       setErrors({});
       setErrorMsg('');
-      setSuccessMsg('');
     }
   };
 
-  const validateForm = () => {
-    const errs = {};
-    if (!isRequired(customerName)) {
-      errs.customerName = 'Введите имя клиента';
+  const validateCartForm = () => {
+    const newErrors = {};
+    if (!customerName || !customerName.trim()) {
+      newErrors.customerName = 'Введите имя клиента';
     }
-    if (!isRequired(customerPhone)) {
-      errs.customerPhone = 'Введите телефон клиента';
+    if (!customerPhone || !customerPhone.trim()) {
+      newErrors.customerPhone = 'Введите номер телефона';
     }
     if (cartItems.length === 0) {
-      errs.cart = 'Добавьте хотя бы один товар в корзину';
-    }
-    if (!paymentMethod) {
-      errs.paymentMethod = 'Выберите способ оплаты';
+      newErrors.cart = 'Добавьте хотя бы один товар в корзину';
     }
 
-    // Individual item discount validations
+    // Check discount fields constraints
     cartItems.forEach((item) => {
-      const disc = parseFloat(item.itemDiscount) || 0;
-      if (disc < 0) {
-        errs[`discount-${item.productId}`] = 'Скидка не может быть меньше 0';
-      } else if (disc > item.unitPrice) {
-        errs[`discount-${item.productId}`] = 'Скидка не может превышать стоимость товара';
+      if (item.itemDiscount < 0) {
+        newErrors[`discount-${item.productId}`] = 'Скидка не может быть отрицательной';
+      } else if (item.itemDiscount > item.unitPrice) {
+        newErrors[`discount-${item.productId}`] = 'Скидка не может быть больше цены';
       }
     });
 
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleCompleteSale = async () => {
-    if (!validateForm() || !user) return;
-    
+    if (!validateCartForm()) return;
     setLoading(true);
     setErrorMsg('');
     setSuccessMsg('');
-    
+
     try {
       const salePayload = {
         customerName,
         customerPhone,
         paymentMethod,
         comment,
-        managerId: user.uid,
-        managerName: user.name || user.email,
-        items: cartItems.map(item => ({
+        managerId: user?.uid || 'anonymous',
+        managerName: user?.displayName || user?.email || 'Менеджер',
+        items: cartItems.map((item) => ({
           productId: item.productId,
           productName: item.productName,
           productType: item.productType,
@@ -199,7 +213,12 @@ export const useCart = () => {
           unitPrice: item.unitPrice,
           itemDiscount: item.itemDiscount,
           finalUnitPrice: item.finalUnitPrice,
-          total: item.total
+          total: item.total,
+          // New historical price fields
+          purchasePrice: item.purchasePrice,
+          sellingPrice: item.sellingPrice,
+          salePrice: item.salePrice,
+          discount: item.discount
         })),
         subtotal,
         totalDiscount,
@@ -207,9 +226,10 @@ export const useCart = () => {
       };
 
       await createSale(salePayload);
+      setSuccessMsg('Продажа успешно оформлена!');
+      showSuccess('Продажа успешно проведена!');
       
-      showSuccess('Продажа успешно проведена! Складские остатки обновлены.');
-      setSuccessMsg('Продажа успешно проведена! Складские остатки обновлены.');
+      // Reset forms
       setCartItems([]);
       setCustomerName('');
       setCustomerPhone('');
@@ -217,7 +237,7 @@ export const useCart = () => {
       setComment('');
       setErrors({});
     } catch (err) {
-      console.error(err);
+      console.error('Checkout error:', err);
       setErrorMsg(err.message || 'Ошибка проведения продажи.');
       showError(err.message || 'Ошибка проведения продажи.');
     } finally {
@@ -250,5 +270,3 @@ export const useCart = () => {
     handleCompleteSale
   };
 };
-
-export default useCart;

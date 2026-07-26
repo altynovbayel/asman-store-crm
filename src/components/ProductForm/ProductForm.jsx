@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Input from '../Input/Input';
 import Button from '../Button/Button';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
-import { isRequired, isPositiveNumber, isValidBarcode } from '../../utils/validators';
+import { isRequired, isValidBarcode } from '../../utils/validators';
 import styles from './ProductForm.module.scss';
 
 const ProductForm = ({
@@ -22,7 +22,10 @@ const ProductForm = ({
         ssd: initialData.ssd || '',
         barcode: initialData.barcode || '',
         quantity: initialData.quantity !== undefined ? String(initialData.quantity) : '0',
-        price: initialData.price !== undefined ? String(initialData.price) : '0'
+        purchasePrice: initialData.purchasePrice !== undefined ? String(initialData.purchasePrice) : '',
+        sellingPrice: initialData.sellingPrice !== undefined 
+          ? String(initialData.sellingPrice) 
+          : initialData.price !== undefined ? String(initialData.price) : ''
       };
     }
     return {
@@ -33,7 +36,8 @@ const ProductForm = ({
       ssd: '',
       barcode: '',
       quantity: '0',
-      price: '0'
+      purchasePrice: '',
+      sellingPrice: ''
     };
   });
 
@@ -54,14 +58,29 @@ const ProductForm = ({
     
     if (!isRequired(formData.quantity)) {
       newErrors.quantity = 'Введите количество';
-    } else if (!isPositiveNumber(formData.quantity)) {
-      newErrors.quantity = 'Количество должно быть >= 0';
+    } else {
+      const qty = parseInt(formData.quantity, 10);
+      if (isNaN(qty) || qty < 0) {
+        newErrors.quantity = 'Количество должно быть >= 0';
+      }
     }
     
-    if (!isRequired(formData.price)) {
-      newErrors.price = 'Введите цену';
-    } else if (!isPositiveNumber(formData.price)) {
-      newErrors.price = 'Цена должна быть >= 0';
+    if (!isRequired(formData.purchasePrice)) {
+      newErrors.purchasePrice = 'Введите цену закупки';
+    } else {
+      const pPrice = parseFloat(formData.purchasePrice);
+      if (isNaN(pPrice) || pPrice <= 0) {
+        newErrors.purchasePrice = 'Цена закупки должна быть > 0';
+      }
+    }
+
+    if (!isRequired(formData.sellingPrice)) {
+      newErrors.sellingPrice = 'Введите цену продажи';
+    } else {
+      const sPrice = parseFloat(formData.sellingPrice);
+      if (isNaN(sPrice) || sPrice <= 0) {
+        newErrors.sellingPrice = 'Цена продажи должна быть > 0';
+      }
     }
 
     setErrors(newErrors);
@@ -71,21 +90,36 @@ const ProductForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      // Map data for submission
+      const submissionData = {
+        ...formData,
+        price: parseFloat(formData.sellingPrice) // Maintain compatibility with older components
+      };
+      onSubmit(submissionData);
     }
   };
+
+  const pPriceNum = parseFloat(formData.purchasePrice);
+  const sPriceNum = parseFloat(formData.sellingPrice);
+  const showWarning = !isNaN(pPriceNum) && !isNaN(sPriceNum) && pPriceNum > sPriceNum;
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       {errorMsg && <div className={styles.errorAlert}>{errorMsg}</div>}
       
+      {showWarning && (
+        <div className={styles.warningAlert}>
+          Предупреждение: Цена закупки ({pPriceNum} сом) превышает цену продажи ({sPriceNum} сом).
+        </div>
+      )}
+
       <div className={styles.selectGroup}>
         <label className={styles.selectLabel}>Тип товара</label>
         <select
           className={styles.selectInput}
           value={formData.type}
           onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-          disabled={loading || !!initialData} // Lock type on edit mode
+          disabled={loading || !!initialData}
         >
           <option value={PRODUCT_TYPES.LAPTOP}>Ноутбук</option>
           <option value={PRODUCT_TYPES.ACCESSORY}>Аксессуар</option>
@@ -102,7 +136,6 @@ const ProductForm = ({
         required
       />
 
-      {/* Render laptop specifications conditional inputs */}
       {formData.type === PRODUCT_TYPES.LAPTOP && (
         <div className={styles.specsGrid}>
           <Input
@@ -150,14 +183,28 @@ const ProductForm = ({
           disabled={loading}
           required
         />
+      </div>
+
+      <div className={styles.rowFields}>
         <Input
-          label="Цена (сом)"
+          label="Цена закупки (сом)"
           type="number"
           step="0.01"
           placeholder="0.00"
-          value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-          error={errors.price}
+          value={formData.purchasePrice}
+          onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
+          error={errors.purchasePrice}
+          disabled={loading}
+          required
+        />
+        <Input
+          label="Цена продажи (сом)"
+          type="number"
+          step="0.01"
+          placeholder="0.00"
+          value={formData.sellingPrice}
+          onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
+          error={errors.sellingPrice}
           disabled={loading}
           required
         />

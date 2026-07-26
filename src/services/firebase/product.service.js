@@ -20,6 +20,19 @@ import { handleFirestoreError } from '../../utils/AppError';
 const PRODUCTS_COLLECTION = 'products';
 
 /**
+ * Maps a Firestore product document, ensuring backward compatibility.
+ */
+const mapProduct = (doc) => {
+  const data = doc.data();
+  return {
+    id: doc.id,
+    ...data,
+    sellingPrice: data.sellingPrice !== undefined ? data.sellingPrice : data.price,
+    purchasePrice: data.purchasePrice !== undefined ? data.purchasePrice : undefined
+  };
+};
+
+/**
  * Subscribe to real-time updates for products
  */
 export const subscribeProducts = (onNext, onError) => {
@@ -29,10 +42,7 @@ export const subscribeProducts = (onNext, onError) => {
     return onSnapshot(
       q,
       (snapshot) => {
-        const products = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const products = snapshot.docs.map(mapProduct);
         onNext(products);
       },
       (error) => {
@@ -53,10 +63,7 @@ export const getProducts = async () => {
     const q = query(productsRef, orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    return querySnapshot.docs.map(mapProduct);
   } catch (error) {
     throw handleFirestoreError(error);
   }
@@ -76,7 +83,9 @@ export const getProduct = async (id) => {
     
     return {
       id: docSnap.id,
-      ...docSnap.data()
+      ...docSnap.data(),
+      sellingPrice: docSnap.data().sellingPrice !== undefined ? docSnap.data().sellingPrice : docSnap.data().price,
+      purchasePrice: docSnap.data().purchasePrice !== undefined ? docSnap.data().purchasePrice : undefined
     };
   } catch (error) {
     throw handleFirestoreError(error);
@@ -97,7 +106,9 @@ export const createProduct = async (productData) => {
       status: productData.status || PRODUCT_STATUS.AVAILABLE,
       barcode: productData.barcode.trim(),
       quantity: Math.max(0, parseInt(productData.quantity, 10) || 0),
-      price: Math.max(0, parseFloat(productData.price) || 0),
+      sellingPrice: Math.max(0, parseFloat(productData.sellingPrice) || 0),
+      purchasePrice: Math.max(0, parseFloat(productData.purchasePrice) || 0),
+      price: Math.max(0, parseFloat(productData.sellingPrice) || 0), // compatibility
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       // Laptops specific fields
@@ -125,7 +136,9 @@ export const updateProduct = async (id, productData) => {
       type: productData.type,
       barcode: productData.barcode.trim(),
       quantity: Math.max(0, parseInt(productData.quantity, 10) || 0),
-      price: Math.max(0, parseFloat(productData.price) || 0),
+      sellingPrice: Math.max(0, parseFloat(productData.sellingPrice) || 0),
+      purchasePrice: Math.max(0, parseFloat(productData.purchasePrice) || 0),
+      price: Math.max(0, parseFloat(productData.sellingPrice) || 0), // compatibility
       updatedAt: serverTimestamp(),
       cpu: productData.type === PRODUCT_TYPES.LAPTOP ? (productData.cpu || '').trim() : '',
       ram: productData.type === PRODUCT_TYPES.LAPTOP ? (productData.ram || '').trim() : '',
