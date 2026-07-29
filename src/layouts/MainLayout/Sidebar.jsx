@@ -8,12 +8,16 @@ import {
   Truck,
   Users,
   Settings,
+  BarChart3,
   X,
   Store
 } from 'lucide-react';
+import { useAuth } from '../../store/AuthContext';
 import styles from './Sidebar.module.scss';
 
 const Sidebar = ({ isOpen, onClose }) => {
+  const { isAdmin } = useAuth();
+
   const menuItems = [
     { path: '/', label: 'Панель управления', icon: LayoutDashboard },
     { path: '/sales', label: 'Оформить продажу', icon: ShoppingBag },
@@ -21,9 +25,12 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/warehouse', label: 'Склад', icon: Boxes },
     { path: '/movements', label: 'Движение товаров', icon: History },
     { path: '/suppliers', label: 'Поставщики', icon: Truck },
-    { path: '/users', label: 'Пользователи', icon: Users },
+    { path: '/reports', label: 'Отчеты', icon: BarChart3, adminOnly: true },
+    { path: '/users', label: 'Пользователи', icon: Users, adminOnly: true },
     { path: '/settings', label: 'Настройки', icon: Settings },
   ];
+
+  const visibleMenuItems = menuItems.filter(item => !item.adminOnly || isAdmin);
 
   return (
     <>
@@ -44,7 +51,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
         
         <nav className={styles.navigation}>
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink

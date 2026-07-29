@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout/MainLayout';
 import Dashboard from '../pages/Dashboard/Dashboard';
+import Reports from '../pages/Reports/Reports';
 import Sales from '../pages/Sales/Sales';
 import SalesHistory from '../pages/Sales/SalesHistory';
 import Warehouse from '../pages/Warehouse/Warehouse';
@@ -55,6 +56,14 @@ export const router = createBrowserRouter([
       {
         path: 'suppliers',
         element: <Suppliers />
+      },
+      {
+        path: 'reports',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]} fallbackPath="/">
+            <Reports />
+          </ProtectedRoute>
+        )
       },
       {
         path: 'users',

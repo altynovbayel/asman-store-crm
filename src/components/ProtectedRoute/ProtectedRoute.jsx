@@ -2,7 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../store/AuthContext';
 import Loader from '../Loader/Loader';
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+const ProtectedRoute = ({ children, allowedRoles, fallbackPath = '/forbidden' }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/forbidden" replace />;
+    return <Navigate to={fallbackPath} replace />;
   }
 
   return children;
