@@ -105,6 +105,10 @@ const Warehouse = () => {
 
   // Confirm delete handler
   const handleConfirmDelete = async () => {
+    if (!isAdmin) {
+      showError('У вас нет прав для удаления товаров.');
+      return;
+    }
     if (!idToDelete) return;
     setActionLoading(true);
     try {

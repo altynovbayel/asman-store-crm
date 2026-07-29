@@ -3,7 +3,6 @@ import {
   doc,
   getDocs,
   getDoc,
-  deleteDoc,
   query,
   orderBy,
   runTransaction,
@@ -85,12 +84,65 @@ export const getSale = async (id) => {
 };
 
 /**
- * Delete a sale by ID (Admin only feature)
+ * Atomic sale deletion that restores inventory levels and sets laptop statuses back
+ * to AVAILABLE, while writing RETURN movement logs after a successful transaction commit.
  */
-export const deleteSale = async (id) => {
+export const deleteSale = async (id, managerId, managerName) => {
   try {
-    const docRef = doc(db, SALES_COLLECTION, id);
-    await deleteDoc(docRef);
+    const saleDocRef = doc(db, SALES_COLLECTION, id);
+    const saleSnap = await getDoc(saleDocRef);
+
+    if (!saleSnap.exists()) {
+      throw new Error('Продажа не найдена');
+    }
+
+    const sale = saleSnap.data();
+
+    // 1. Run Firestore transaction to atomically restore quantities and delete sale record
+    await runTransaction(db, async (transaction) => {
+      for (const item of sale.items || []) {
+        const productRef = doc(db, 'products', item.productId);
+        const productSnap = await transaction.get(productRef);
+
+        if (productSnap.exists()) {
+          const product = productSnap.data();
+
+          if (item.productType === PRODUCT_TYPES.LAPTOP) {
+            // Restore laptop status
+            transaction.update(productRef, {
+              status: PRODUCT_STATUS.AVAILABLE,
+              updatedAt: serverTimestamp()
+            });
+          } else if (item.productType === PRODUCT_TYPES.ACCESSORY) {
+            // Increment accessory quantity back
+            const currentQty = product.quantity || 0;
+            transaction.update(productRef, {
+              quantity: currentQty + (item.quantity || 0),
+              updatedAt: serverTimestamp()
+            });
+          }
+        }
+      }
+
+      // Delete the sale document inside the transaction
+      transaction.delete(saleDocRef);
+    });
+
+    // 2. Create RETURN movements for each item after transaction succeeds
+    try {
+      for (const item of sale.items || []) {
+        await createMovement({
+          type: MOVEMENT_TYPES.RETURN,
+          productId: item.productId,
+          quantity: item.quantity,
+          managerId,
+          managerName,
+          comment: `Отмена продажи ${sale.saleNumber}`
+        });
+      }
+    } catch (movementError) {
+      console.error('Failed to log return movements on sale deletion:', movementError);
+    }
   } catch (error) {
     throw handleFirestoreError(error);
   }
@@ -229,7 +281,6 @@ export const createSale = async (saleData) => {
       }
     } catch (error) {
       console.error('Failed to log inventory movements for sale:', error);
-      // Note: Stock movements failures must be logged. Product status is already locked as SOLD.
       throw new Error(
         `Продажа ${result.saleNumber} была создана, но произошел сбой при обновлении складских остатков: ${error.message}`,
         { cause: error }

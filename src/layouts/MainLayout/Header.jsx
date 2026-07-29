@@ -20,6 +20,8 @@ const Header = ({ onMenuToggle }) => {
         return 'Склад';
       case '/sales-history':
         return 'История продаж';
+      case '/movements':
+        return 'Движение товаров'
       case '/users':
         return 'Пользователи';
       case '/settings':

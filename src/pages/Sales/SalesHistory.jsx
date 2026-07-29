@@ -10,7 +10,7 @@ import { subscribeSales, deleteSale } from '../../services/firebase/sales.servic
 import styles from './SalesHistory.module.scss';
 
 const SalesHistory = () => {
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { showSuccess, showError } = useToast();
   
   const [sales, setSales] = useState([]);
@@ -63,10 +63,16 @@ const SalesHistory = () => {
   };
 
   const handleDeleteSale = async (id) => {
+    if (!isAdmin) {
+      showError('У вас нет прав для выполнения этой операции.');
+      return;
+    }
     setDeleteLoading(true);
     try {
-      await deleteSale(id);
-      showSuccess('Чек продажи успешно удален.');
+      const managerId = user?.uid || 'anonymous';
+      const managerName = user?.displayName || user?.email || 'Администратор';
+      await deleteSale(id, managerId, managerName);
+      showSuccess('Продажа успешно удалена, складские остатки восстановлены.');
       setIsDetailsOpen(false);
       setSelectedSale(null);
     } catch (err) {
@@ -107,7 +113,7 @@ const SalesHistory = () => {
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(false)}
         sale={selectedSale}
-        onDelete={handleDeleteSale}
+        onDeleteSale={handleDeleteSale}
         deleteLoading={deleteLoading}
         showDeleteButton={isAdmin}
         isAdmin={isAdmin}
