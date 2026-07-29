@@ -7,6 +7,7 @@ import Search from '../../components/Search/Search';
 import SalesTable from '../../components/SalesTable/SalesTable';
 import SaleDetailsModal from '../../components/SaleDetailsModal/SaleDetailsModal';
 import { subscribeSales, deleteSale } from '../../services/firebase/sales.service';
+import { logAction } from '../../services/firebase/audit.service';
 import styles from './SalesHistory.module.scss';
 
 const SalesHistory = () => {
@@ -73,6 +74,9 @@ const SalesHistory = () => {
       const managerName = user?.displayName || user?.email || 'Администратор';
       await deleteSale(id, managerId, managerName);
       showSuccess('Продажа успешно удалена, складские остатки восстановлены.');
+      if (selectedSale) {
+        await logAction(user, 'SALE_DELETE', `Удалена продажа № ${selectedSale.saleNumber} на сумму ${selectedSale.grandTotal} сом`);
+      }
       setIsDetailsOpen(false);
       setSelectedSale(null);
     } catch (err) {

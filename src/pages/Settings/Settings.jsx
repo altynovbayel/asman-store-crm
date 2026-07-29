@@ -1,245 +1,171 @@
-import { useState } from 'react';
-import { Settings as SettingsIcon, Shield, Bell, Save } from 'lucide-react';
-import { useToast } from '../../store/ToastContext';
+import { useState, useEffect } from 'react';
+import { Save } from 'lucide-react';
+import { useStoreSettings } from '../../hooks/useStoreSettings';
 import Card from '../../components/Card/Card';
 import Button from '../../components/Button/Button';
 import Input from '../../components/Input/Input';
+import Loader from '../../components/Loader/Loader';
 import styles from './Settings.module.scss';
 
 const Settings = () => {
-  const { showSuccess, showError } = useToast();
-  const [activeTab, setActiveTab] = useState('general');
-  const [loading, setLoading] = useState(false);
-  const [generalSettings, setGeneralSettings] = useState({
-    storeName: 'Asman Store CRM',
-    taxRate: '12',
-    currency: 'KZT (₸)',
-    supportEmail: 'support@asman.kz'
+  const { settings, loading, saving, saveSettings } = useStoreSettings();
+  const [formData, setFormData] = useState({
+    storeName: '',
+    phone: '',
+    whatsapp: '',
+    email: '',
+    website: '',
+    address: '',
+    logoUrl: '',
+    currency: 'сом',
+    defaultWarrantyMonths: 12,
+    warrantyTerms: ''
   });
 
-  const [securitySettings, setSecuritySettings] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
-  const [notificationSettings, setNotificationSettings] = useState({
-    orderCreated: true,
-    outOfStock: true,
-    weeklyReport: false
-  });
-
-  const handleSaveGeneral = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      showSuccess('Общие настройки сохранены успешно!');
-    }, 800);
-  };
-
-  const handleSaveSecurity = (e) => {
-    e.preventDefault();
-    if (securitySettings.newPassword !== securitySettings.confirmPassword) {
-      showError('Новые пароли не совпадают!');
-      return;
+  // Populate local form when settings finish loading
+  useEffect(() => {
+    if (settings) {
+      const loadFormData = async () => {
+        await Promise.resolve();
+        setFormData({
+          storeName: settings.storeName || '',
+          phone: settings.phone || '',
+          whatsapp: settings.whatsapp || '',
+          email: settings.email || '',
+          website: settings.website || '',
+          address: settings.address || '',
+          logoUrl: settings.logoUrl || '',
+          currency: settings.currency || 'сом',
+          defaultWarrantyMonths: settings.defaultWarrantyMonths !== undefined ? settings.defaultWarrantyMonths : 12,
+          warrantyTerms: settings.warrantyTerms || ''
+        });
+      };
+      loadFormData();
     }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      showSuccess('Пароль успешно изменен!');
-      setSecuritySettings({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    }, 800);
+  }, [settings]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await saveSettings(formData);
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
+        <Loader text="Загрузка настроек магазина..." />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.settingsPage}>
-      {/* Sidebar Tabs */}
-      <div className={styles.layout}>
-        <div className={styles.tabsCardWrapper}>
-          <Card className={styles.tabsCard}>
-            <div className={styles.tabsList}>
-              <button
-                type="button"
-                className={`${styles.tabBtn} ${activeTab === 'general' ? styles.active : ''}`}
-                onClick={() => setActiveTab('general')}
-              >
-                <SettingsIcon size={18} />
-                <span>Основные настройки</span>
-              </button>
+      <Card title="Настройки магазина" subtitle="Управление базовой информацией и условиями гарантии вашей торговой сети">
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formFields}>
+            
+            <div className={styles.rowFields}>
+              <Input
+                label="Название магазина"
+                value={formData.storeName}
+                onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
+                required
+              />
               
-              <button
-                type="button"
-                className={`${styles.tabBtn} ${activeTab === 'security' ? styles.active : ''}`}
-                onClick={() => setActiveTab('security')}
-              >
-                <Shield size={18} />
-                <span>Безопасность</span>
-              </button>
-              
-              <button
-                type="button"
-                className={`${styles.tabBtn} ${activeTab === 'notifications' ? styles.active : ''}`}
-                onClick={() => setActiveTab('notifications')}
-              >
-                <Bell size={18} />
-                <span>Уведомления</span>
-              </button>
+              <Input
+                label="Ссылка на логотип (URL)"
+                value={formData.logoUrl}
+                onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+                placeholder="https://example.com/logo.png"
+              />
             </div>
-          </Card>
-        </div>
 
-        {/* Tab contents */}
-        <div className={styles.settingsContentWrapper}>
-          {activeTab === 'general' && (
-            <Card title="Основные настройки" subtitle="Настройка базовой информации о вашей системе CRM">
-              <form onSubmit={handleSaveGeneral} className={styles.form}>
-                <div className={styles.formFields}>
-                  <Input
-                    label="Название магазина"
-                    value={generalSettings.storeName}
-                    onChange={(e) => setGeneralSettings({ ...generalSettings, storeName: e.target.value })}
-                    required
-                  />
-                  
-                  <div className={styles.rowFields}>
-                    <Input
-                      label="Налоговая ставка (%)"
-                      type="number"
-                      value={generalSettings.taxRate}
-                      onChange={(e) => setGeneralSettings({ ...generalSettings, taxRate: e.target.value })}
-                      required
-                    />
-                    
-                    <div className={styles.selectGroup}>
-                      <label className={styles.selectLabel}>Валюта системы</label>
-                      <select
-                        className={styles.selectInput}
-                        value={generalSettings.currency}
-                        onChange={(e) => setGeneralSettings({ ...generalSettings, currency: e.target.value })}
-                      >
-                        <option value="KZT (₸)">Казахстанский тенге (₸)</option>
-                        <option value="USD ($)">Доллар США ($)</option>
-                        <option value="RUB (₽)">Российский рубль (₽)</option>
-                      </select>
-                    </div>
-                  </div>
+            <div className={styles.rowFields}>
+              <Input
+                label="Телефон магазина"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                required
+              />
+              
+              <Input
+                label="Номер WhatsApp"
+                value={formData.whatsapp}
+                onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+              />
+            </div>
 
-                  <Input
-                    label="Email поддержки"
-                    type="email"
-                    value={generalSettings.supportEmail}
-                    onChange={(e) => setGeneralSettings({ ...generalSettings, supportEmail: e.target.value })}
-                    required
-                  />
-                </div>
-                
-                <div className={styles.formActions}>
-                  <Button type="submit" icon={Save} loading={loading}>
-                    Сохранить изменения
-                  </Button>
-                </div>
-              </form>
-            </Card>
-          )}
+            <div className={styles.rowFields}>
+              <Input
+                label="Электронная почта"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+              
+              <Input
+                label="Веб-сайт"
+                value={formData.website}
+                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                placeholder="www.asmanstore.kg"
+              />
+            </div>
 
-          {activeTab === 'security' && (
-            <Card title="Безопасность учетной записи" subtitle="Измените пароль для обеспечения безопасности вашего аккаунта">
-              <form onSubmit={handleSaveSecurity} className={styles.form}>
-                <div className={styles.formFields}>
-                  <Input
-                    label="Текущий пароль"
-                    type="password"
-                    placeholder="••••••••"
-                    value={securitySettings.currentPassword}
-                    onChange={(e) => setSecuritySettings({ ...securitySettings, currentPassword: e.target.value })}
-                    required
-                  />
-                  
-                  <hr className={styles.divider} />
-                  
-                  <Input
-                    label="Новый пароль"
-                    type="password"
-                    placeholder="Минимум 8 символов"
-                    value={securitySettings.newPassword}
-                    onChange={(e) => setSecuritySettings({ ...securitySettings, newPassword: e.target.value })}
-                    required
-                  />
-                  
-                  <Input
-                    label="Подтвердите новый пароль"
-                    type="password"
-                    placeholder="Повторите новый пароль"
-                    value={securitySettings.confirmPassword}
-                    onChange={(e) => setSecuritySettings({ ...securitySettings, confirmPassword: e.target.value })}
-                    required
-                  />
-                </div>
-                
-                <div className={styles.formActions}>
-                  <Button type="submit" icon={Save} loading={loading}>
-                    Обновить пароль
-                  </Button>
-                </div>
-              </form>
-            </Card>
-          )}
-
-          {activeTab === 'notifications' && (
-            <Card title="Настройки уведомлений" subtitle="Выберите типы событий, о которых хотите получать уведомления">
-              <div className={styles.form}>
-                <div className={styles.checkboxList}>
-                  <label className={styles.checkboxItem}>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.orderCreated}
-                      onChange={(e) => setNotificationSettings({ ...notificationSettings, orderCreated: e.target.checked })}
-                      className={styles.checkboxInput}
-                    />
-                    <div className={styles.checkboxLabelWrapper}>
-                      <span className={styles.checkboxLabel}>Новые заказы</span>
-                      <span className={styles.checkboxDesc}>Уведомлять при оформлении новых заказов в системе</span>
-                    </div>
-                  </label>
-                  
-                  <label className={styles.checkboxItem}>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.outOfStock}
-                      onChange={(e) => setNotificationSettings({ ...notificationSettings, outOfStock: e.target.checked })}
-                      className={styles.checkboxInput}
-                    />
-                    <div className={styles.checkboxLabelWrapper}>
-                      <span className={styles.checkboxLabel}>Критические остатки товаров</span>
-                      <span className={styles.checkboxDesc}>Уведомлять, когда товар на складе заканчивается</span>
-                    </div>
-                  </label>
-                  
-                  <label className={styles.checkboxItem}>
-                    <input
-                      type="checkbox"
-                      checked={notificationSettings.weeklyReport}
-                      onChange={(e) => setNotificationSettings({ ...notificationSettings, weeklyReport: e.target.checked })}
-                      className={styles.checkboxInput}
-                    />
-                    <div className={styles.checkboxLabelWrapper}>
-                      <span className={styles.checkboxLabel}>Еженедельный отчет</span>
-                      <span className={styles.checkboxDesc}>Отправлять отчет о выручке и продажах каждый понедельник</span>
-                    </div>
-                  </label>
-                </div>
-                
-                <div className={styles.formActions}>
-                  <Button onClick={() => showSuccess('Настройки уведомлений сохранены успешно!')} icon={Save}>
-                    Сохранить уведомления
-                  </Button>
-                </div>
+            <div className={styles.rowFields}>
+              <div className={styles.selectGroup}>
+                <label className={styles.selectLabel}>Валюта</label>
+                <select
+                  className={styles.selectInput}
+                  value={formData.currency}
+                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                >
+                  <option value="сом">Киргизский сом (сом)</option>
+                  <option value="₸">Казахстанский тенге (₸)</option>
+                  <option value="$">Доллар США ($)</option>
+                  <option value="₽">Российский рубль (₽)</option>
+                </select>
               </div>
-            </Card>
-          )}
-        </div>
-      </div>
+
+              <Input
+                label="Срок гарантии по умолчанию (месяцев)"
+                type="number"
+                value={formData.defaultWarrantyMonths}
+                onChange={(e) => setFormData({ ...formData, defaultWarrantyMonths: parseInt(e.target.value, 10) || 0 })}
+                min="0"
+                required
+              />
+            </div>
+
+            <Input
+              label="Адрес магазина"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              required
+            />
+
+            <div className={styles.textareaGroup}>
+              <label htmlFor="warranty-terms-area" className={styles.selectLabel}>
+                Условия гарантии (каждый пункт с новой строки)
+              </label>
+              <textarea
+                id="warranty-terms-area"
+                className={styles.textarea}
+                value={formData.warrantyTerms}
+                onChange={(e) => setFormData({ ...formData, warrantyTerms: e.target.value })}
+                placeholder="Введите пункты гарантийного соглашения..."
+                required
+              />
+            </div>
+
+          </div>
+
+          <div className={styles.formActions}>
+            <Button type="submit" icon={Save} loading={saving}>
+              Сохранить настройки
+            </Button>
+          </div>
+        </form>
+      </Card>
     </div>
   );
 };

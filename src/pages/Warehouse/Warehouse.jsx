@@ -15,10 +15,11 @@ import {
   deleteProduct,
   barcodeExists
 } from '../../services/firebase/product.service';
+import { logAction } from '../../services/firebase/audit.service';
 import styles from './Warehouse.module.scss';
 
 const Warehouse = () => {
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { showSuccess, showError } = useToast();
   const { products, loading } = useProducts();
   
@@ -82,9 +83,11 @@ const Warehouse = () => {
       if (isEdit) {
         await updateProduct(editingProduct.id, formData);
         showSuccess('Товар успешно обновлен');
+        await logAction(user, 'PRODUCT_EDIT', `Изменен товар: ${formData.name} (${formData.barcode})`);
       } else {
         await createProduct(formData);
         showSuccess('Товар успешно создан');
+        await logAction(user, 'PRODUCT_CREATE', `Создан товар: ${formData.name} (${formData.barcode})`);
       }
 
       setIsModalOpen(false);
@@ -114,6 +117,7 @@ const Warehouse = () => {
     try {
       await deleteProduct(idToDelete);
       showSuccess('Товар успешно удален');
+      await logAction(user, 'PRODUCT_DELETE', `Удален товар с ID: ${idToDelete}`);
       setIsDeleteOpen(false);
       setIdToDelete(null);
     } catch (err) {

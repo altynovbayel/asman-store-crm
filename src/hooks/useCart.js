@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { createSale } from '../services/firebase/sales.service';
+import { logAction } from '../services/firebase/audit.service';
 import { PRODUCT_TYPES } from '../constants/productTypes';
 import { PAYMENT_METHODS } from '../constants/paymentMethods';
 import { useAuth } from '../store/AuthContext';
@@ -225,9 +226,10 @@ export const useCart = () => {
         grandTotal
       };
 
-      await createSale(salePayload);
+      const saleResult = await createSale(salePayload);
       setSuccessMsg('Продажа успешно оформлена!');
       showSuccess('Продажа успешно проведена!');
+      await logAction(user, 'SALE_CREATE', `Оформлена продажа № ${saleResult.saleNumber} на сумму ${grandTotal} сом`);
       
       // Reset forms
       setCartItems([]);

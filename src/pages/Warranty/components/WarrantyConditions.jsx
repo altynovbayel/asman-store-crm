@@ -1,7 +1,26 @@
 import { WARRANTY_CONDITIONS, WARRANTY_EXCLUSIONS, CLAIM_PROCEDURE } from '../../../constants/warrantyTerms';
 import styles from './Warranty.module.scss';
 
-const WarrantyConditions = () => {
+const WarrantyConditions = ({ storeSettings }) => {
+  const termsText = storeSettings?.warrantyTerms;
+
+  if (termsText) {
+    const lines = termsText.split('\n').filter((l) => l.trim() !== '');
+    return (
+      <div className={styles.termsSection}>
+        <div className={styles.termBlock}>
+          <h4 className={styles.termTitle}>Условия гарантии</h4>
+          <ol className={styles.termList}>
+            {lines.map((line, idx) => (
+              <li key={idx}>{line}</li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback to static constants if not in Firestore
   return (
     <div className={styles.termsSection}>
       <div className={styles.termBlock}>

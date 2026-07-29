@@ -10,7 +10,7 @@ const WarrantyPreview = React.forwardRef(({ sale, storeSettings }, ref) => {
     <div className={styles.warrantyContainer} ref={ref}>
       <WarrantyHeader storeSettings={storeSettings} />
       <WarrantyInfoTable sale={sale} storeSettings={storeSettings} />
-      <WarrantyConditions />
+      <WarrantyConditions storeSettings={storeSettings} />
       <WarrantyFooter sale={sale} />
     </div>
   );

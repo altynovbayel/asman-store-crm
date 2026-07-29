@@ -9,6 +9,7 @@ import InventoryMovements from '../pages/InventoryMovements/InventoryMovements';
 import Suppliers from '../pages/Suppliers/Suppliers';
 import Users from '../pages/Users/Users';
 import Settings from '../pages/Settings/Settings';
+import AuditLog from '../pages/AuditLog/AuditLog';
 import NotFound from '../pages/NotFound/NotFound';
 
 import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
@@ -66,16 +67,28 @@ export const router = createBrowserRouter([
         )
       },
       {
+        path: 'settings',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <Settings />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'audit-logs',
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <AuditLog />
+          </ProtectedRoute>
+        )
+      },
+      {
         path: 'users',
         element: (
           <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
             <Users />
           </ProtectedRoute>
         )
-      },
-      {
-        path: 'settings',
-        element: <Settings />
       },
       {
         path: 'forbidden',

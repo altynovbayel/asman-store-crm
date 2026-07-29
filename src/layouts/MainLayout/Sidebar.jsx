@@ -9,6 +9,7 @@ import {
   Users,
   Settings,
   BarChart3,
+  ShieldAlert,
   X,
   Store
 } from 'lucide-react';
@@ -26,8 +27,9 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/movements', label: 'Движение товаров', icon: History },
     { path: '/suppliers', label: 'Поставщики', icon: Truck },
     { path: '/reports', label: 'Отчеты', icon: BarChart3, adminOnly: true },
+    { path: '/audit-logs', label: 'Журнал аудита', icon: ShieldAlert, adminOnly: true },
     { path: '/users', label: 'Пользователи', icon: Users, adminOnly: true },
-    { path: '/settings', label: 'Настройки', icon: Settings },
+    { path: '/settings', label: 'Настройки', icon: Settings, adminOnly: true },
   ];
 
   const visibleMenuItems = menuItems.filter(item => !item.adminOnly || isAdmin);

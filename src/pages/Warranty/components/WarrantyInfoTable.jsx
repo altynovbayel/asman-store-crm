@@ -3,7 +3,12 @@ import styles from './Warranty.module.scss';
 
 const WarrantyInfoTable = ({ sale, storeSettings }) => {
   const laptopItem = sale?.items?.[0] || {};
-  const warrantyPeriod = laptopItem.warrantyMonths !== undefined ? laptopItem.warrantyMonths : 12;
+  
+  // Use settings default if not specified on the item level
+  const warrantyPeriod = laptopItem.warrantyMonths !== undefined 
+    ? laptopItem.warrantyMonths 
+    : (storeSettings?.defaultWarrantyMonths !== undefined ? storeSettings.defaultWarrantyMonths : 12);
+
   const storeName = storeSettings?.storeName || 'ASMAN STORE';
   const storePhone = storeSettings?.phone || storeSettings?.storePhone || '—';
 

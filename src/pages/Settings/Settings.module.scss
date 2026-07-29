@@ -184,3 +184,35 @@
   line-height: 1.4;
   margin-top: 4px;
 }
+
+.textareaGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  width: 100%;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+  resize: vertical;
+  transition: all $transition-fast;
+  
+  &:hover {
+    border-color: $color-border-hover;
+  }
+  
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.12);
+  }
+}
+

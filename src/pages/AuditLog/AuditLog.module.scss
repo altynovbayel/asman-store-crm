@@ -1,0 +1,147 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.auditLogPage {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-size: $font-size-xl;
+  font-weight: $weight-bold;
+  color: $text-main;
+  margin: 0;
+}
+
+.controlsCard {
+  width: 100%;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.selectGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: $font-size-sm;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+.selectInput {
+  height: 38px;
+  padding: 0 14px;
+  background-color: $color-bg-card;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  color: $text-main;
+  font-family: $font-family;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  outline: none;
+  transition: all $transition-fast;
+
+  &:hover {
+    border-color: $color-border-hover;
+  }
+
+  &:focus {
+    border-color: $color-primary;
+  }
+}
+
+.tableCard {
+  width: 100%;
+}
+
+.tableCardBody {
+  padding: 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $weight-semibold;
+  text-transform: uppercase;
+}
+
+.badgeSuccess {
+  background-color: rgba($color-success, 0.08);
+  color: $color-success;
+}
+
+.badgeWarning {
+  background-color: rgba($color-warning, 0.08);
+  color: $color-warning;
+}
+
+.badgeDanger {
+  background-color: rgba($color-danger, 0.08);
+  color: $color-danger;
+}
+
+.badgeInfo {
+  background-color: rgba($color-primary, 0.08);
+  color: $color-primary;
+}
+
+.userCell {
+  display: flex;
+  flex-direction: column;
+  
+  .name {
+    font-weight: $weight-medium;
+    color: $text-main;
+  }
+  
+  .email {
+    font-size: $font-size-xs;
+    color: $text-muted;
+  }
+}
+
+.roleBadge {
+  font-size: $font-size-xs;
+  color: $text-muted;
+  background-color: lighten($color-bg-main, 1%);
+  border: 1px solid $color-border;
+  padding: 2px 6px;
+  border-radius: $radius-sm;
+  display: inline-block;
+}
+
+.descriptionCell {
+  color: $text-main;
+  max-width: 400px;
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+.dateText {
+  color: $text-muted;
+  font-variant-numeric: tabular-nums;
+}
+
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
