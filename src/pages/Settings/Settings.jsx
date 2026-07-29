@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Save } from 'lucide-react';
 import { useStoreSettings } from '../../hooks/useStoreSettings';
 import Card from '../../components/Card/Card';
@@ -9,47 +9,32 @@ import styles from './Settings.module.scss';
 
 const Settings = () => {
   const { settings, loading, saving, saveSettings } = useStoreSettings();
-  const [formData, setFormData] = useState({
-    storeName: '',
-    phone: '',
-    whatsapp: '',
-    email: '',
-    website: '',
-    address: '',
-    logoUrl: '',
-    currency: 'сом',
-    defaultWarrantyMonths: 12,
-    warrantyTerms: ''
-  });
+  const [formData, setFormData] = useState(null);
 
-  // Populate local form when settings finish loading
-  useEffect(() => {
-    if (settings) {
-      const loadFormData = async () => {
-        await Promise.resolve();
-        setFormData({
-          storeName: settings.storeName || '',
-          phone: settings.phone || '',
-          whatsapp: settings.whatsapp || '',
-          email: settings.email || '',
-          website: settings.website || '',
-          address: settings.address || '',
-          logoUrl: settings.logoUrl || '',
-          currency: settings.currency || 'сом',
-          defaultWarrantyMonths: settings.defaultWarrantyMonths !== undefined ? settings.defaultWarrantyMonths : 12,
-          warrantyTerms: settings.warrantyTerms || ''
-        });
-      };
-      loadFormData();
-    }
-  }, [settings]);
+  // Initialize state inline during render once settings data is fetched
+  if (settings && !formData) {
+    setFormData({
+      storeName: settings.storeName || '',
+      phone: settings.phone || '',
+      whatsapp: settings.whatsapp || '',
+      email: settings.email || '',
+      website: settings.website || '',
+      address: settings.address || '',
+      logoUrl: settings.logoUrl || '',
+      currency: settings.currency || 'сом',
+      defaultWarrantyMonths: settings.defaultWarrantyMonths !== undefined ? settings.defaultWarrantyMonths : 12,
+      warrantyTerms: settings.warrantyTerms || ''
+    });
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await saveSettings(formData);
+    if (formData) {
+      await saveSettings(formData);
+    }
   };
 
-  if (loading) {
+  if (loading || !formData) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px' }}>
         <Loader text="Загрузка настроек магазина..." />

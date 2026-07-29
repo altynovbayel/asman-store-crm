@@ -1,7 +1,7 @@
 import styles from './Warranty.module.scss';
 
 const WarrantyHeader = ({ storeSettings }) => {
-  const storeName = storeSettings?.storeName || 'ASMAN STORE';
+  const storeName = storeSettings?.storeName || '—';
   const logoUrl = storeSettings?.logoUrl;
 
   return (

@@ -9,8 +9,9 @@ const WarrantyInfoTable = ({ sale, storeSettings }) => {
     ? laptopItem.warrantyMonths 
     : (storeSettings?.defaultWarrantyMonths !== undefined ? storeSettings.defaultWarrantyMonths : 12);
 
-  const storeName = storeSettings?.storeName || 'ASMAN STORE';
+  const storeName = storeSettings?.storeName || '—';
   const storePhone = storeSettings?.phone || storeSettings?.storePhone || '—';
+  const storeAddress = storeSettings?.address || '—';
 
   return (
     <div className={styles.infoSection}>
@@ -57,6 +58,10 @@ const WarrantyInfoTable = ({ sale, storeSettings }) => {
             <tr>
               <td className={styles.label}>Магазин</td>
               <td className={styles.value}>{storeName}</td>
+            </tr>
+            <tr>
+              <td className={styles.label}>Адрес</td>
+              <td className={styles.value}>{storeAddress}</td>
             </tr>
             <tr>
               <td className={styles.label}>Телефон</td>

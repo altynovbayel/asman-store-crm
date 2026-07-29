@@ -75,7 +75,7 @@ const SalesHistory = () => {
       await deleteSale(id, managerId, managerName);
       showSuccess('Продажа успешно удалена, складские остатки восстановлены.');
       if (selectedSale) {
-        await logAction(user, 'SALE_DELETE', `Удалена продажа № ${selectedSale.saleNumber} на сумму ${selectedSale.grandTotal} сом`);
+        await logAction(user, 'SALE_DELETED', `Удалена продажа № ${selectedSale.saleNumber} на сумму ${selectedSale.grandTotal} сом`);
       }
       setIsDetailsOpen(false);
       setSelectedSale(null);

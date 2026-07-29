@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Store } from 'lucide-react';
 import { useAuth } from '../../store/AuthContext';
+import { logAction } from '../../services/firebase/audit.service';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import Card from '../../components/Card/Card';
@@ -46,7 +47,9 @@ const Login = () => {
 
     setLoading(true);
     try {
-      await login(email.trim(), password);
+      const loggedUser = await login(email.trim(), password);
+      await logAction(loggedUser, 'LOGIN_SUCCESS', `Пользователь ${loggedUser.name || loggedUser.email} успешно вошел в систему`);
+      
       // Redirect back to page user tried to access or dashboard
       const from = location.state?.from?.pathname || '/';
       navigate(from, { replace: true });

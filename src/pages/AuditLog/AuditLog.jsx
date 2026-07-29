@@ -43,18 +43,20 @@ const AuditLog = () => {
 
   const getActionBadge = (action) => {
     switch (action) {
-      case 'PRODUCT_CREATE':
+      case 'PRODUCT_CREATED':
         return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Создание товара</span>;
-      case 'PRODUCT_EDIT':
+      case 'PRODUCT_UPDATED':
         return <span className={`${styles.badge} ${styles.badgeWarning}`}>Изменение товара</span>;
-      case 'PRODUCT_DELETE':
+      case 'PRODUCT_DELETED':
         return <span className={`${styles.badge} ${styles.badgeDanger}`}>Удаление товара</span>;
-      case 'SALE_CREATE':
+      case 'SALE_CREATED':
         return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Новая продажа</span>;
-      case 'SALE_DELETE':
+      case 'SALE_DELETED':
         return <span className={`${styles.badge} ${styles.badgeDanger}`}>Отмена продажи</span>;
-      case 'SETTINGS_UPDATE':
+      case 'SETTINGS_UPDATED':
         return <span className={`${styles.badge} ${styles.badgeInfo}`}>Настройки</span>;
+      case 'LOGIN_SUCCESS':
+        return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Вход в систему</span>;
       default:
         return <span className={`${styles.badge} ${styles.badgeInfo}`}>{action}</span>;
     }

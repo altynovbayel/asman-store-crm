@@ -34,7 +34,7 @@ export const useStoreSettings = () => {
       showSuccess('Настройки магазина успешно сохранены.');
       
       // Log action
-      await logAction(user, 'SETTINGS_UPDATE', 'Обновлены настройки магазина');
+      await logAction(user, 'SETTINGS_UPDATED', 'Обновлены настройки магазина');
       return true;
     } catch (err) {
       console.error('Failed to save store settings:', err);

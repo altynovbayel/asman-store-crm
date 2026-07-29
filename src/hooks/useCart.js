@@ -229,7 +229,7 @@ export const useCart = () => {
       const saleResult = await createSale(salePayload);
       setSuccessMsg('Продажа успешно оформлена!');
       showSuccess('Продажа успешно проведена!');
-      await logAction(user, 'SALE_CREATE', `Оформлена продажа № ${saleResult.saleNumber} на сумму ${grandTotal} сом`);
+      await logAction(user, 'SALE_CREATED', `Оформлена продажа № ${saleResult.saleNumber} на сумму ${grandTotal} сом`);
       
       // Reset forms
       setCartItems([]);

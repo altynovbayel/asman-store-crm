@@ -83,11 +83,11 @@ const Warehouse = () => {
       if (isEdit) {
         await updateProduct(editingProduct.id, formData);
         showSuccess('Товар успешно обновлен');
-        await logAction(user, 'PRODUCT_EDIT', `Изменен товар: ${formData.name} (${formData.barcode})`);
+        await logAction(user, 'PRODUCT_UPDATED', `Изменен товар: ${formData.name} (${formData.barcode})`);
       } else {
         await createProduct(formData);
         showSuccess('Товар успешно создан');
-        await logAction(user, 'PRODUCT_CREATE', `Создан товар: ${formData.name} (${formData.barcode})`);
+        await logAction(user, 'PRODUCT_CREATED', `Создан товар: ${formData.name} (${formData.barcode})`);
       }
 
       setIsModalOpen(false);
@@ -117,7 +117,7 @@ const Warehouse = () => {
     try {
       await deleteProduct(idToDelete);
       showSuccess('Товар успешно удален');
-      await logAction(user, 'PRODUCT_DELETE', `Удален товар с ID: ${idToDelete}`);
+      await logAction(user, 'PRODUCT_DELETED', `Удален товар с ID: ${idToDelete}`);
       setIsDeleteOpen(false);
       setIdToDelete(null);
     } catch (err) {
