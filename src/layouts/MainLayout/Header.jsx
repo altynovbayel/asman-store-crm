@@ -26,6 +26,10 @@ const Header = ({ onMenuToggle }) => {
         return 'Пользователи';
       case '/settings':
         return 'Настройки';
+      case '/reports':
+        return 'Отчеты';
+      case '/audit-logs':
+        return '';
       case '/forbidden':
         return 'Доступ ограничен';
       default:
@@ -93,7 +97,7 @@ const Header = ({ onMenuToggle }) => {
             <span>{avatarLetter}</span>
           </div>
           <div className={styles.userInfo}>
-            <span className={styles.userName}>{user?.name || 'Пользователь'}</span>
+            <span className={styles.userName}>{user?.email || 'Пользователь'}</span>
             <span className={styles.userRole}>{getRoleLabel(user?.role)}</span>
           </div>
         </div>

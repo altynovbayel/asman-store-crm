@@ -29,7 +29,7 @@
     border-bottom: 1px solid $color-border;
     
     th {
-      padding: 1rem 1.5rem;
+      padding: 5px 10px;
       font-weight: $weight-semibold;
       color: $text-muted;
       text-transform: uppercase;
@@ -55,7 +55,7 @@
     }
     
     td {
-      padding: 1.125rem 1.5rem;
+      padding: 5px 10px;
       color: $text-main;
       vertical-align: middle;
       white-space: nowrap;

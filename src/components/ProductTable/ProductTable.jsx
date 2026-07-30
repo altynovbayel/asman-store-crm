@@ -59,7 +59,7 @@ const ProductTable = ({
       key: 'quantity',
       render: (qty) => {
         if (qty === 0) return <span className={`${styles.stockBadge} ${styles.outOfStock}`}>Нет в наличии</span>;
-        if (qty < 5) return <span className={`${styles.stockBadge} ${styles.lowStock}`}>{qty} шт (Мало)</span>;
+        if (qty < 5) return <span className={`${styles.stockBadge} ${styles.lowStock}`}>{qty} шт</span>;
         return <span className={`${styles.stockBadge} ${styles.inStock}`}>{qty} шт</span>;
       }
     },
