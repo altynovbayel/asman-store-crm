@@ -26,7 +26,7 @@ const Cart = ({
           <tr>
             <th>Товар</th>
             <th>Штрихкод</th>
-            <th>Тип</th>
+            {/* <th>Тип</th> */}
             <th>Цена</th>
             <th className={styles.discountCell}>Скидка (ед)</th>
             <th>Цена со скидкой</th>
@@ -61,11 +61,11 @@ const Cart = ({
                 <td>
                   <code className={styles.barcode}>{item.barcode}</code>
                 </td>
-                <td>
+                {/* <td>
                   <span className={`${styles.typeBadge} ${isLaptop ? styles.typeLaptop : styles.typeAccessory}`}>
                     {isLaptop ? 'Ноутбук' : 'Аксессуар'}
                   </span>
-                </td>
+                </td> */}
                 <td>
                   <span className={styles.price}>{formatPrice(itemPrice)} сом</span>
                 </td>
