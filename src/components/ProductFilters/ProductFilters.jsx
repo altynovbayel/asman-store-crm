@@ -29,9 +29,10 @@ const ProductFilters = ({
             onChange={(e) => onTypeFilterChange(e.target.value)}
             className={styles.select}
           >
-            <option value="all">Все категории</option>
+            <option value="all">Все товары</option>
             <option value={PRODUCT_TYPES.LAPTOP}>Ноутбуки</option>
             <option value={PRODUCT_TYPES.ACCESSORY}>Аксессуары</option>
+            <option value="archive">Архив</option>
           </select>
         </div>
         

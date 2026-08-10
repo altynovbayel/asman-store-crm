@@ -9,6 +9,7 @@ import Button from '../../components/Button/Button';
 import ProductFilters from '../../components/ProductFilters/ProductFilters';
 import ProductTable from '../../components/ProductTable/ProductTable';
 import ProductModal from '../../components/ProductModal/ProductModal';
+import { PRODUCT_STATUS } from '../../constants/productStatus';
 import {
   createProduct,
   updateProduct,
@@ -40,15 +41,27 @@ const Warehouse = () => {
 
   // Filter and search logic in memory
   const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
     return products.filter((product) => {
+      const isSold = product.status === PRODUCT_STATUS.SOLD;
+
       const matchesSearch =
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.barcode.toLowerCase().includes(searchQuery.toLowerCase());
-        
-      const matchesType =
-        typeFilter === 'all' || product.type === typeFilter;
-        
-      return matchesSearch && matchesType;
+        !query ||
+        (product.name || '').toLowerCase().includes(query) ||
+        (product.barcode || '').toLowerCase().includes(query);
+
+      if (!matchesSearch) return false;
+
+      if (typeFilter === 'archive') {
+        return isSold;
+      }
+
+      if (isSold) return false;
+
+      if (typeFilter === 'all') return true;
+
+      return product.type === typeFilter;
     });
   }, [products, searchQuery, typeFilter]);
 
