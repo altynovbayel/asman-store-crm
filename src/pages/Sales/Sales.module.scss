@@ -118,6 +118,23 @@
   cursor: pointer;
 }
 
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: $font-size-sm;
+  color: $text-main;
+  cursor: pointer;
+  font-weight: $weight-medium;
+}
+
+.checkboxInput {
+  accent-color: $color-primary;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 .textarea {
   width: 100%;
   padding: 8px 12px;

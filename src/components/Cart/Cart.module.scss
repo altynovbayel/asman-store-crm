@@ -201,3 +201,25 @@
   display: block;
   white-space: nowrap;
 }
+
+.discountBadge {
+  font-size: 10px;
+  color: $color-primary;
+  background-color: rgba($color-primary, 0.08);
+  padding: 2px 4px;
+  border-radius: $radius-sm;
+  margin-top: 4px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.kitBadge {
+  font-size: 10px;
+  color: $color-success;
+  background-color: rgba($color-success, 0.08);
+  padding: 2px 4px;
+  border-radius: $radius-sm;
+  margin-top: 4px;
+  display: inline-block;
+  white-space: nowrap;
+}

@@ -7,8 +7,8 @@ import { useAuth } from '../store/AuthContext';
 import { useToast } from '../store/ToastContext';
 import {
   calculateItemDiscount,
-  calculateItemTotal,
-  calculateSaleSummary
+  calculateSaleSummary,
+  getInstallmentDiscountPercent
 } from '../utils/saleCalculator';
 
 export const useCart = () => {
@@ -19,6 +19,8 @@ export const useCart = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHODS.CASH);
+  const [installmentTerm, setInstallmentTerm] = useState(null);
+  const [kitIncluded, setKitIncluded] = useState(false);
   const [comment, setComment] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -33,6 +35,17 @@ export const useCart = () => {
       return () => clearTimeout(timer);
     }
   }, [successMsg]);
+
+  // Handle payment method change and set installment term to 3 for M+ and Zero, or reset for non-installment methods
+  const handlePaymentMethodChange = (method) => {
+    setPaymentMethod(method);
+    if ([PAYMENT_METHODS.M_PLUS, PAYMENT_METHODS.ZERO].includes(method)) {
+      setInstallmentTerm(3);
+    } else {
+      setInstallmentTerm(null);
+    }
+    setErrors((prev) => ({ ...prev, paymentMethod: null, installmentTerm: null }));
+  };
 
   const handleSelectProduct = (product) => {
     setErrorMsg('');
@@ -53,13 +66,13 @@ export const useCart = () => {
         productName: product.name,
         productType: product.type,
         barcode: product.barcode,
+        cpu: product.cpu || '',
+        ram: product.ram || '',
+        ssd: product.ssd || '',
         quantity: 1,
         unitPrice: sellingPrice,
         itemDiscount: 0,
-        finalUnitPrice: sellingPrice,
-        total: sellingPrice,
         stockLimit: 1,
-        // Purchase price compatibility
         purchasePrice,
         sellingPrice,
         salePrice: sellingPrice,
@@ -76,12 +89,9 @@ export const useCart = () => {
         }
         
         const updatedItems = [...cartItems];
-        const newQty = item.quantity + 1;
-        const total = calculateItemTotal(item.unitPrice, item.itemDiscount, newQty);
         updatedItems[existingIndex] = {
           ...item,
-          quantity: newQty,
-          total
+          quantity: item.quantity + 1
         };
         setCartItems(updatedItems);
       } else {
@@ -93,10 +103,7 @@ export const useCart = () => {
           quantity: 1,
           unitPrice: sellingPrice,
           itemDiscount: 0,
-          finalUnitPrice: sellingPrice,
-          total: sellingPrice,
           stockLimit: product.quantity,
-          // Purchase price compatibility
           purchasePrice,
           sellingPrice,
           salePrice: sellingPrice,
@@ -108,51 +115,54 @@ export const useCart = () => {
   };
 
   const handleUpdateQuantity = (productId, newQty) => {
-    const updated = cartItems.map((item) => {
-      if (item.productId === productId) {
-        const qty = Math.min(item.stockLimit, Math.max(1, newQty));
-        const total = calculateItemTotal(item.unitPrice, item.itemDiscount, qty);
-        return {
-          ...item,
-          quantity: qty,
-          total
-        };
-      }
-      return item;
-    });
-    setCartItems(updated);
+    setCartItems((prev) =>
+      prev.map((item) => {
+        if (item.productId === productId) {
+          const qty = Math.min(item.stockLimit, Math.max(1, newQty));
+          return {
+            ...item,
+            quantity: qty
+          };
+        }
+        return item;
+      })
+    );
   };
 
   const handleUpdateItemDiscount = (productId, discountInput) => {
-    const updated = cartItems.map((item) => {
-      if (item.productId === productId) {
-        const unitPrice = item.unitPrice;
-        const itemDiscount = calculateItemDiscount(unitPrice, discountInput);
-        const finalUnitPrice = Math.max(0, unitPrice - itemDiscount);
-        const total = calculateItemTotal(unitPrice, itemDiscount, item.quantity);
-        return {
-          ...item,
-          itemDiscount,
-          finalUnitPrice,
-          total,
-          discount: itemDiscount
-        };
-      }
-      return item;
-    });
-    setCartItems(updated);
+    setCartItems((prev) =>
+      prev.map((item) => {
+        if (item.productId === productId) {
+          const itemDiscount = calculateItemDiscount(item.unitPrice, discountInput);
+          return {
+            ...item,
+            itemDiscount,
+            discount: itemDiscount
+          };
+        }
+        return item;
+      })
+    );
   };
 
   const handleRemoveItem = (productId) => {
     setCartItems((prev) => prev.filter((item) => item.productId !== productId));
   };
 
-  // Calculations using saleCalculator
+  // Calculations using saleCalculator with installment and kit support
   const summary = useMemo(() => {
-    return calculateSaleSummary(cartItems);
-  }, [cartItems]);
+    return calculateSaleSummary(cartItems, paymentMethod, installmentTerm, kitIncluded);
+  }, [cartItems, paymentMethod, installmentTerm, kitIncluded]);
 
-  const { subtotal, totalDiscount, grandTotal } = summary;
+  const {
+    processedItems,
+    subtotal,
+    totalDiscount,
+    installmentDiscountTotal,
+    kitDiscountTotal,
+    individualDiscountTotal,
+    grandTotal
+  } = summary;
 
   const handleClearAll = () => {
     if (window.confirm('Вы действительно хотите очистить корзину и поля ввода?')) {
@@ -160,6 +170,8 @@ export const useCart = () => {
       setCustomerName('');
       setCustomerPhone('');
       setPaymentMethod(PAYMENT_METHODS.CASH);
+      setInstallmentTerm(null);
+      setKitIncluded(false);
       setComment('');
       setErrors({});
       setErrorMsg('');
@@ -176,6 +188,13 @@ export const useCart = () => {
     }
     if (cartItems.length === 0) {
       newErrors.cart = 'Добавьте хотя бы один товар в корзину';
+    }
+
+    if ([PAYMENT_METHODS.M_PLUS, PAYMENT_METHODS.ZERO].includes(paymentMethod)) {
+      const term = Number(installmentTerm);
+      if (term !== 3) {
+        newErrors.installmentTerm = 'Для рассрочки допустим только срок 3 месяца (5%)';
+      }
     }
 
     // Check discount fields constraints
@@ -198,24 +217,37 @@ export const useCart = () => {
     setSuccessMsg('');
 
     try {
+      const installmentPercent = getInstallmentDiscountPercent(paymentMethod, installmentTerm);
+      const isInstallment = [PAYMENT_METHODS.M_PLUS, PAYMENT_METHODS.ZERO].includes(paymentMethod);
+
       const salePayload = {
         customerName,
         customerPhone,
         paymentMethod,
+        installmentTerm: isInstallment ? Number(installmentTerm) : null,
+        installmentDiscount: isInstallment ? installmentPercent : 0,
+        kitIncluded: Boolean(kitIncluded),
+        kitDiscount: kitDiscountTotal,
+        installmentDiscountTotal,
+        individualDiscountTotal,
         comment,
         managerId: user?.uid || 'anonymous',
         managerName: user?.displayName || user?.email || 'Менеджер',
-        items: cartItems.map((item) => ({
+        items: processedItems.map((item) => ({
           productId: item.productId,
           productName: item.productName,
           productType: item.productType,
           barcode: item.barcode,
+          cpu: item.cpu || '',
+          ram: item.ram || '',
+          ssd: item.ssd || '',
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           itemDiscount: item.itemDiscount,
+          installmentDiscount: item.installmentDiscount,
+          kitDiscount: item.kitDiscount,
           finalUnitPrice: item.finalUnitPrice,
           total: item.total,
-          // New historical price fields
           purchasePrice: item.purchasePrice,
           sellingPrice: item.sellingPrice,
           salePrice: item.salePrice,
@@ -236,6 +268,8 @@ export const useCart = () => {
       setCustomerName('');
       setCustomerPhone('');
       setPaymentMethod(PAYMENT_METHODS.CASH);
+      setInstallmentTerm(null);
+      setKitIncluded(false);
       setComment('');
       setErrors({});
     } catch (err) {
@@ -248,13 +282,17 @@ export const useCart = () => {
   };
 
   return {
-    cartItems,
+    cartItems: processedItems,
     customerName,
     setCustomerName,
     customerPhone,
     setCustomerPhone,
     paymentMethod,
-    setPaymentMethod,
+    setPaymentMethod: handlePaymentMethodChange,
+    installmentTerm,
+    setInstallmentTerm,
+    kitIncluded,
+    setKitIncluded,
     comment,
     setComment,
     errors,

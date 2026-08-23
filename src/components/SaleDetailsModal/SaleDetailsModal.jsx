@@ -5,6 +5,7 @@ import Modal from '../Modal/Modal';
 import Button from '../Button/Button';
 import { formatDate } from '../../utils/formatDate';
 import { formatPrice } from '../../utils/formatPrice';
+import { getProductDisplayName } from '../../utils/getProductDisplayName';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
 import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
 import WarrantyModal from '../../pages/Warranty/components/WarrantyModal';
@@ -109,8 +110,24 @@ const SaleDetailsModal = ({
               </div>
               <div className={styles.metaItem}>
                 <span className={styles.label}>Способ оплаты:</span>
-                <span className={styles.value}>{PAYMENT_METHOD_LABELS[sale.paymentMethod] || '—'}</span>
+                <span className={styles.value}>
+                  {(() => {
+                    const label = PAYMENT_METHOD_LABELS[sale.paymentMethod] || sale.paymentMethod || '—';
+                    if (sale.installmentTerm) {
+                      return `${label} (${sale.installmentTerm} мес${sale.installmentDiscount ? `, скидка ${sale.installmentDiscount}%` : ''})`;
+                    }
+                    return label;
+                  })()}
+                </span>
               </div>
+              {sale.kitIncluded && (
+                <div className={styles.metaItem}>
+                  <span className={styles.label}>Комплект:</span>
+                  <span className={styles.value}>
+                    <strong style={{ color: '#10b981' }}>Включен (бесплатно)</strong>
+                  </span>
+                </div>
+              )}
               <div className={styles.metaItem}>
                 <span className={styles.label}>Дата продажи:</span>
                 <span className={styles.value}>{formatDate(sale.createdAt)}</span>
@@ -145,13 +162,13 @@ const SaleDetailsModal = ({
                   <tbody>
                     {sale.items.map((item, idx) => {
                       const price = item.unitPrice !== undefined ? item.unitPrice : item.price;
-                      const discount = item.itemDiscount !== undefined ? item.itemDiscount : 0;
-                      const finalPrice = item.finalUnitPrice !== undefined ? item.finalUnitPrice : price;
+                      const itemDiscTotal = item.discount !== undefined ? item.discount : (item.itemDiscount || 0);
+                      const finalPrice = item.finalUnitPrice !== undefined ? item.finalUnitPrice : Math.max(0, price - itemDiscTotal);
 
                       return (
                         <tr key={idx}>
                           <td>
-                            <span className={styles.itemName}>{item.productName}</span>
+                            <span className={styles.itemName}>{getProductDisplayName(item)}</span>
                           </td>
                           <td>
                             <code className={styles.barcode}>{item.barcode}</code>
@@ -162,7 +179,7 @@ const SaleDetailsModal = ({
                             </span>
                           </td>
                           <td className={styles.numCol}>{formatPrice(price)} сом</td>
-                          <td className={styles.numCol}>{discount > 0 ? `${formatPrice(discount)} сом` : '—'}</td>
+                          <td className={styles.numCol}>{itemDiscTotal > 0 ? `${formatPrice(itemDiscTotal)} сом` : '—'}</td>
                           <td className={styles.numCol}>{formatPrice(finalPrice)} сом</td>
                           <td className={styles.numCol}>{item.quantity} шт</td>
                           <td className={`${styles.numCol} ${styles.rowTotal}`}>
@@ -182,8 +199,20 @@ const SaleDetailsModal = ({
                 <span>Промежуточный итог:</span>
                 <span>{formatPrice(sale.subtotal)} сом</span>
               </div>
+              {sale.installmentDiscountTotal > 0 && (
+                <div className={styles.totalsRow}>
+                  <span>Скидка по рассрочке ({sale.installmentDiscount}%):</span>
+                  <span className={styles.discountText}>-{formatPrice(sale.installmentDiscountTotal)} сом</span>
+                </div>
+              )}
+              {sale.kitDiscount > 0 && (
+                <div className={styles.totalsRow}>
+                  <span>Скидка на комплект:</span>
+                  <span className={styles.discountText}>-{formatPrice(sale.kitDiscount)} сом</span>
+                </div>
+              )}
               <div className={styles.totalsRow}>
-                <span>Скидка:</span>
+                <span>Общая скидка:</span>
                 <span className={styles.discountText}>
                   -{formatPrice(sale.totalDiscount !== undefined ? sale.totalDiscount : sale.discount)} сом
                 </span>

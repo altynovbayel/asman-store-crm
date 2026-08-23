@@ -1,4 +1,5 @@
 import { formatDate } from '../../../utils/formatDate';
+import { getProductDisplayName } from '../../../utils/getProductDisplayName';
 import styles from './Warranty.module.scss';
 
 const WarrantyInfoTable = ({ sale, storeSettings }) => {
@@ -22,7 +23,7 @@ const WarrantyInfoTable = ({ sale, storeSettings }) => {
           <tbody>
             <tr>
               <td className={styles.label}>Модель</td>
-              <td className={styles.value}>{laptopItem.productName || '—'}</td>
+              <td className={styles.value}>{getProductDisplayName(laptopItem) || '—'}</td>
             </tr>
             <tr>
               <td className={styles.label}>Штрихкод</td>

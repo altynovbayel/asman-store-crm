@@ -2,6 +2,7 @@ import { Plus, Minus, Trash2 } from 'lucide-react';
 import Button from '../Button/Button';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
 import { formatPrice } from '../../utils/formatPrice';
+import { getProductDisplayName } from '../../utils/getProductDisplayName';
 import styles from './Cart.module.scss';
 
 const Cart = ({
@@ -50,7 +51,7 @@ const Cart = ({
               <tr key={item.productId} className={styles.cartRow}>
                 <td>
                   <div className={styles.nameCell}>
-                    <span className={styles.productName}>{item.productName}</span>
+                    <span className={styles.productName}>{getProductDisplayName(item)}</span>
                     {!isLaptop && (
                       <span className={styles.stockNotice}>
                         Доступно на складе: {item.stockLimit} шт
@@ -81,6 +82,12 @@ const Cart = ({
                       placeholder="0"
                       onChange={(e) => onUpdateItemDiscount(item.productId, e.target.value)}
                     />
+                    {item.installmentDiscount > 0 && (
+                      <span className={styles.discountBadge}>Рассрочка (-{formatPrice(item.installmentDiscount)} сом)</span>
+                    )}
+                    {item.kitDiscount > 0 && (
+                      <span className={styles.kitBadge}>Комплект (бесплатно)</span>
+                    )}
                     {discountError && <span className={styles.errorText}>{discountError}</span>}
                   </div>
                 </td>

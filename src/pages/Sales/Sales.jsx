@@ -17,6 +17,8 @@ const Sales = () => {
     setCustomerPhone,
     paymentMethod,
     setPaymentMethod,
+    kitIncluded,
+    setKitIncluded,
     comment,
     setComment,
     errors,
@@ -33,6 +35,8 @@ const Sales = () => {
     handleClearAll,
     handleCompleteSale
   } = useCart();
+
+
 
   return (
     <div className={styles.salesPage}>
@@ -98,8 +102,44 @@ const Sales = () => {
                     />
                     <span>POS-терминал</span>
                   </label>
+
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={PAYMENT_METHODS.M_PLUS}
+                      checked={paymentMethod === PAYMENT_METHODS.M_PLUS}
+                      onChange={() => setPaymentMethod(PAYMENT_METHODS.M_PLUS)}
+                      className={styles.radioInput}
+                    />
+                    <span>М+ 3 месяца</span>
+                  </label>
+
+                  <label className={styles.radioLabel}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={PAYMENT_METHODS.ZERO}
+                      checked={paymentMethod === PAYMENT_METHODS.ZERO}
+                      onChange={() => setPaymentMethod(PAYMENT_METHODS.ZERO)}
+                      className={styles.radioInput}
+                    />
+                    <span>Zero 3 месяца</span>
+                  </label>
                 </div>
                 {errors.paymentMethod && <span className={styles.errorText}>{errors.paymentMethod}</span>}
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={kitIncluded}
+                    onChange={(e) => setKitIncluded(e.target.checked)}
+                    className={styles.checkboxInput}
+                  />
+                  <span>Комплект</span>
+                </label>
               </div>
 
               <div className={styles.formGroup}>

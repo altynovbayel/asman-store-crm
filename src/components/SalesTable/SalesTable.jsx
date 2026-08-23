@@ -36,7 +36,13 @@ const SalesTable = ({
       title: 'Способ оплаты',
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
-      render: (method) => PAYMENT_METHOD_LABELS[method] || '—'
+      render: (method, record) => {
+        const label = PAYMENT_METHOD_LABELS[method] || method || '—';
+        if (record.installmentTerm) {
+          return `${label} (${record.installmentTerm} мес)`;
+        }
+        return label;
+      }
     },
     {
       title: 'Позиций',

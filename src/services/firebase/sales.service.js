@@ -15,9 +15,11 @@ import { createMovement } from './inventory.service';
 import { PRODUCT_STATUS } from '../../constants/productStatus';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
 import { MOVEMENT_TYPES } from '../../constants/movementTypes';
+import { PAYMENT_METHODS } from '../../constants/paymentMethods';
 import { handleFirestoreError } from '../../utils/AppError';
 
 const SALES_COLLECTION = 'sales';
+
 
 /**
  * Subscribe to real-time updates for sales
@@ -158,6 +160,12 @@ export const createSale = async (saleData) => {
       customerName,
       customerPhone,
       paymentMethod,
+      installmentTerm,
+      installmentDiscount,
+      kitIncluded,
+      kitDiscount,
+      installmentDiscountTotal,
+      individualDiscountTotal,
       comment,
       managerId,
       managerName,
@@ -174,6 +182,12 @@ export const createSale = async (saleData) => {
 
     if (!paymentMethod) {
       throw new Error('Выберите способ оплаты.');
+    }
+
+    if ([PAYMENT_METHODS.M_PLUS, PAYMENT_METHODS.ZERO].includes(paymentMethod)) {
+      if (Number(installmentTerm) !== 3) {
+        throw new Error('Для рассрочки допустим только срок 3 месяца (скидка 5%).');
+      }
     }
 
     if (items.length === 0) {
@@ -243,11 +257,21 @@ export const createSale = async (saleData) => {
       transaction.set(counterRef, { current: nextNum }, { merge: true });
 
       // Create the Sale document
+      const isInstallment = [PAYMENT_METHODS.M_PLUS, PAYMENT_METHODS.ZERO].includes(paymentMethod);
+
       const finalSaleDoc = {
         saleNumber,
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         paymentMethod,
+        ...(isInstallment ? {
+          installmentTerm: Number(installmentTerm),
+          installmentDiscount: Number(installmentDiscount) || 0,
+          installmentDiscountTotal: parseFloat(installmentDiscountTotal) || 0
+        } : {}),
+        kitIncluded: Boolean(kitIncluded),
+        kitDiscount: parseFloat(kitDiscount) || 0,
+        individualDiscountTotal: parseFloat(individualDiscountTotal) || 0,
         comment: (comment || '').trim(),
         managerId,
         managerName,

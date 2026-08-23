@@ -4,6 +4,7 @@ import { useProducts } from '../../store/ProductsContext';
 import { PRODUCT_STATUS } from '../../constants/productStatus';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
 import { formatPrice } from '../../utils/formatPrice';
+import { getProductDisplayName } from '../../utils/getProductDisplayName';
 import styles from './ProductSearch.module.scss';
 
 const ProductSearch = ({ onSelectProduct }) => {
@@ -90,7 +91,7 @@ const ProductSearch = ({ onSelectProduct }) => {
                   )}
                 </div>
                 <div className={styles.productInfo}>
-                  <span className={styles.name}>{product.name}</span>
+                  <span className={styles.name}>{getProductDisplayName(product)}</span>
                   <span className={styles.spec}>
                     Код: {product.barcode} | Остаток: {product.quantity} шт
                   </span>
