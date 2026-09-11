@@ -12,6 +12,7 @@ const Modal = ({
   footer = true,
   onSave,
   saveText = 'Сохранить',
+  saveVariant = 'primary',
   cancelText = 'Отмена',
   loading = false,
   size = 'md',
@@ -23,7 +24,7 @@ const Modal = ({
   // Esc key closure
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && isOpen && !loading) {
         onClose();
       }
     };
@@ -37,11 +38,11 @@ const Modal = ({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, loading]);
 
   // Click outside closure
   const handleOverlayClick = (e) => {
-    if (modalRef.current && !modalRef.current.contains(e.target)) {
+    if (!loading && modalRef.current && !modalRef.current.contains(e.target)) {
       onClose();
     }
   };
@@ -59,7 +60,13 @@ const Modal = ({
       <div className={modalClasses} ref={modalRef}>
         <div className={styles.header}>
           <h3 className={styles.title}>{title}</h3>
-          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close modal">
+          <button
+            type="button"
+            className={styles.closeBtn}
+            onClick={onClose}
+            disabled={loading}
+            aria-label="Close modal"
+          >
             <X size={20} />
           </button>
         </div>
@@ -76,7 +83,7 @@ const Modal = ({
                   {cancelText}
                 </Button>
                 {onSave && (
-                  <Button variant="primary" onClick={onSave} loading={loading}>
+                  <Button variant={saveVariant} onClick={onSave} loading={loading}>
                     {saveText}
                   </Button>
                 )}

@@ -145,3 +145,11 @@
   align-items: center;
   min-height: 200px;
 }
+
+.confirmText {
+  font-size: $font-size-sm;
+  color: $text-muted;
+  line-height: 1.6;
+  margin: 0;
+}
+

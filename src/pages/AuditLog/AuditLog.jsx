@@ -1,34 +1,63 @@
-import { useState, useEffect, useMemo } from 'react';
-import { ShieldAlert } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { ShieldAlert, Trash2 } from 'lucide-react';
 import Card from '../../components/Card/Card';
 import Table from '../../components/Table/Table';
 import Loader from '../../components/Loader/Loader';
 import Empty from '../../components/Empty/Empty';
+import Button from '../../components/Button/Button';
+import Modal from '../../components/Modal/Modal';
+import { useAuth } from '../../store/AuthContext';
 import { useToast } from '../../store/ToastContext';
-import { getAuditLogs } from '../../services/firebase/audit.service';
+import { getAuditLogs, clearAuditLogs } from '../../services/firebase/audit.service';
 import { formatDate } from '../../utils/formatDate';
 import styles from './AuditLog.module.scss';
 
 const AuditLog = () => {
-  const { showError } = useToast();
+  const { user, isAdmin } = useAuth();
+  const { showSuccess, showError } = useToast();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState('all'); // all | sales | products | settings
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+
+  const fetchLogs = useCallback(async () => {
+    try {
+      const data = await getAuditLogs();
+      setLogs(data);
+    } catch (err) {
+      console.error('Failed to fetch audit logs:', err);
+      showError(err.message || 'Ошибка при загрузке системного журнала.');
+    } finally {
+      setLoading(false);
+    }
+  }, [showError]);
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const data = await getAuditLogs();
-        setLogs(data);
-      } catch (err) {
-        console.error('Failed to fetch audit logs:', err);
-        showError(err.message || 'Ошибка при загрузке системного журнала.');
-      } finally {
-        setLoading(false);
-      }
+    const init = async () => {
+      await Promise.resolve();
+      fetchLogs();
     };
-    fetchLogs();
-  }, [showError]);
+    init();
+  }, [fetchLogs]);
+
+  const handleClearLogs = async () => {
+    if (clearing) return;
+    setClearing(true);
+    try {
+      await clearAuditLogs(user);
+      setIsClearModalOpen(false);
+      showSuccess('Журнал аудита очищен');
+      setFilterType('all');
+      setLoading(true);
+      await fetchLogs();
+    } catch (err) {
+      console.error('Failed to clear audit logs:', err);
+      showError(err.message || 'Ошибка при очистке системного журнала.');
+    } finally {
+      setClearing(false);
+    }
+  };
 
   // Filter logs locally in memory
   const filteredLogs = useMemo(() => {
@@ -57,6 +86,8 @@ const AuditLog = () => {
         return <span className={`${styles.badge} ${styles.badgeInfo}`}>Настройки</span>;
       case 'LOGIN_SUCCESS':
         return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Вход в систему</span>;
+      case 'AUDIT_LOG_CLEARED':
+        return <span className={`${styles.badge} ${styles.badgeDanger}`}>Очистка журнала</span>;
       default:
         return <span className={`${styles.badge} ${styles.badgeInfo}`}>{action}</span>;
     }
@@ -117,6 +148,16 @@ const AuditLog = () => {
     <div className={styles.auditLogPage}>
       <div className={styles.headerRow}>
         <h1 className={styles.pageTitle}>Журнал аудита операций</h1>
+        {isAdmin && (
+          <Button
+            variant="danger"
+            icon={Trash2}
+            onClick={() => setIsClearModalOpen(true)}
+            disabled={loading}
+          >
+            Очистить журнал
+          </Button>
+        )}
       </div>
 
       {/* Filters Card */}
@@ -162,6 +203,23 @@ const AuditLog = () => {
           />
         </Card>
       )}
+
+      {/* Confirmation Modal */}
+      <Modal
+        isOpen={isClearModalOpen}
+        onClose={() => !clearing && setIsClearModalOpen(false)}
+        title="Очистить журнал аудита?"
+        size="sm"
+        saveText="Очистить журнал"
+        saveVariant="danger"
+        cancelText="Отмена"
+        onSave={handleClearLogs}
+        loading={clearing}
+      >
+        <p className={styles.confirmText}>
+          Все записи журнала будут удалены без возможности восстановления.
+        </p>
+      </Modal>
     </div>
   );
 };

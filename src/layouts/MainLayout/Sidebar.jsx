@@ -5,13 +5,12 @@ import {
   Receipt,
   Boxes,
   History,
-  Truck,
   Users,
   Settings,
   BarChart3,
   ShieldAlert,
   X,
-  Store
+  Cloudy
 } from 'lucide-react';
 import { useAuth } from '../../store/AuthContext';
 import styles from './Sidebar.module.scss';
@@ -25,7 +24,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/sales-history', label: 'История продаж', icon: Receipt },
     { path: '/warehouse', label: 'Склад', icon: Boxes },
     { path: '/movements', label: 'Движение товаров', icon: History },
-    { path: '/suppliers', label: 'Поставщики', icon: Truck },
+    // { path: '/suppliers', label: 'Поставщики', icon: Truck },
     { path: '/reports', label: 'Отчеты', icon: BarChart3, adminOnly: true },
     { path: '/audit-logs', label: 'Журнал аудита', icon: ShieldAlert, adminOnly: true },
     { path: '/users', label: 'Пользователи', icon: Users, adminOnly: true },
@@ -44,8 +43,8 @@ const Sidebar = ({ isOpen, onClose }) => {
       <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className={styles.logoContainer}>
           <div className={styles.logoWrapper}>
-            <Store size={24} className={styles.logoIcon} />
-            <span className={styles.logoText}>Asman Store</span>
+            <Cloudy size={24} className={styles.logoIcon} />
+            <span className={styles.logoText}>Bulut Store</span>
           </div>
           <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close sidebar">
             <X size={20} />
@@ -73,7 +72,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         
         <div className={styles.sidebarFooter}>
           <p className={styles.footerVersion}>CRM v1.0.0</p>
-          <p className={styles.footerCopyright}>© 2026 Asman Store</p>
+          <p className={styles.footerCopyright}>© 2026 Bulut Store</p>
         </div>
       </aside>
     </>
