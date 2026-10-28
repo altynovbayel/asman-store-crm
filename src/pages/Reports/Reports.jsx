@@ -9,6 +9,7 @@ import { useToast } from '../../store/ToastContext';
 import { useAuth } from '../../store/AuthContext';
 import { useProducts } from '../../store/ProductsContext';
 import { getSalesForDateRange } from './services/reports.service';
+import { getDateRange } from './utils/dateRange';
 import { deleteSale } from '../../services/firebase/sales.service';
 import {
   calculateRevenue,
@@ -42,30 +43,6 @@ const Reports = () => {
   // SaleDetailsModal states
   const [selectedSale, setSelectedSale] = useState(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
-  const getDateRange = (type, customS = '', customE = '') => {
-    const now = new Date();
-    let startDate;
-    let endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-
-    if (type === 'today') {
-      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    } else if (type === 'week') {
-      const day = now.getDay();
-      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-      startDate = new Date(now.getFullYear(), now.getMonth(), diff, 0, 0, 0, 0);
-    } else if (type === 'month') {
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-    } else if (type === 'custom') {
-      if (!customS || !customE) return null;
-      const [sYear, sMonth, sDay] = customS.split('-').map(Number);
-      const [eYear, eMonth, eDay] = customE.split('-').map(Number);
-      startDate = new Date(sYear, sMonth - 1, sDay, 0, 0, 0, 0);
-      endDate = new Date(eYear, eMonth - 1, eDay, 23, 59, 59, 999);
-    }
-
-    return { startDate, endDate };
-  };
 
   const fetchSalesData = useCallback(async (range) => {
     if (!range) return;

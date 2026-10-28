@@ -1,3 +1,6 @@
+import { PRODUCT_TYPES } from '../../../constants/productTypes';
+import { PRODUCT_STATUS } from '../../../constants/productStatus';
+
 /**
  * Calculates the total revenue from a list of sales.
  * Revenue is the sum of the final checkout grand totals.
@@ -131,4 +134,47 @@ export const calculatePotentialProfit = (products = []) => {
   const retail = calculateInventoryRetailValue(products);
   const purchase = calculateInventoryPurchaseValue(products);
   return retail - purchase;
+};
+
+/**
+ * Number of units a product currently has in stock.
+ * Laptops are unique units: in stock only while AVAILABLE (their quantity field is ignored).
+ * Accessories are counted by quantity; missing or negative quantity counts as 0.
+ * @param {Object} product
+ * @returns {number}
+ */
+export const getUnitsInStock = (product) => {
+  if (!product) return 0;
+  if (product.type === PRODUCT_TYPES.LAPTOP) {
+    return product.status === PRODUCT_STATUS.AVAILABLE ? 1 : 0;
+  }
+  if (product.type === PRODUCT_TYPES.ACCESSORY) {
+    const qty = Number(product.quantity);
+    return Number.isFinite(qty) && qty > 0 ? qty : 0;
+  }
+  return 0;
+};
+
+/**
+ * Summarizes the current warehouse stock: laptops in stock, accessory units in stock
+ * and their total purchase value (current purchasePrice; missing price counts as 0).
+ * @param {Array} products
+ * @returns {{ laptops: number, accessories: number, purchaseValue: number }}
+ */
+export const calculateCurrentStock = (products = []) => {
+  return products.reduce(
+    (acc, product) => {
+      const units = getUnitsInStock(product);
+      if (units === 0) return acc;
+
+      const price = Number(product.purchasePrice);
+      const unitCost = Number.isFinite(price) && price > 0 ? price : 0;
+
+      if (product.type === PRODUCT_TYPES.LAPTOP) acc.laptops += units;
+      else acc.accessories += units;
+      acc.purchaseValue += unitCost * units;
+      return acc;
+    },
+    { laptops: 0, accessories: 0, purchaseValue: 0 }
+  );
 };

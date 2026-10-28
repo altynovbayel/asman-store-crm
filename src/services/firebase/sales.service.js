@@ -5,6 +5,7 @@ import {
   getDoc,
   query,
   orderBy,
+  limit,
   runTransaction,
   serverTimestamp,
   onSnapshot
@@ -58,6 +59,24 @@ export const getSales = async () => {
   try {
     const salesRef = collection(db, SALES_COLLECTION);
     const q = query(salesRef, orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    throw handleFirestoreError(error);
+  }
+};
+
+/**
+ * Fetch the most recent sales (newest first) with a single limited query.
+ */
+export const getRecentSales = async (limitNum = 5) => {
+  try {
+    const salesRef = collection(db, SALES_COLLECTION);
+    const q = query(salesRef, orderBy('createdAt', 'desc'), limit(limitNum));
     const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map((doc) => ({

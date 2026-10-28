@@ -10,6 +10,8 @@ export const ProductsProvider = ({ children }) => {
   const userId = user?.uid || null;
   // State is tagged with the user it was loaded for, so data of a previous session is never shown
   const [state, setState] = useState({ userId: null, products: [], loading: true, error: null });
+  // Bumped by retry() to re-create a subscription that ended with an error
+  const [retryKey, setRetryKey] = useState(0);
 
   // Subscribe only for a signed-in user with access; re-subscribe when the user changes
   // (a listener rejected by Firestore Rules before login never resumes on its own).
@@ -33,13 +35,19 @@ export const ProductsProvider = ({ children }) => {
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, [userId]);
+  }, [userId, retryKey]);
+
+  const retry = () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    setRetryKey((key) => key + 1);
+  };
 
   const isCurrent = userId !== null && state.userId === userId;
   const value = {
     products: isCurrent ? state.products : [],
     loading: userId !== null && (!isCurrent || state.loading),
-    error: isCurrent ? state.error : null
+    error: isCurrent ? state.error : null,
+    retry
   };
 
   return (
