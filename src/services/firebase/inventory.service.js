@@ -16,7 +16,38 @@ import { generateMovementNumber } from '../../utils/generateMovementNumber';
 import { MOVEMENT_TYPES } from '../../constants/movementTypes';
 import { handleFirestoreError } from '../../utils/AppError';
 
-const MOVEMENTS_COLLECTION = 'inventory_movements';
+export const MOVEMENTS_COLLECTION = 'inventory_movements';
+export const MOVEMENTS_COUNTER_ID = 'inventory_movements';
+
+/**
+ * Builds an inventory movement document with the canonical field set.
+ * Shared by createMovement and sale transactions so the schema stays identical.
+ */
+export const buildMovementDoc = ({
+  movementNumber,
+  type,
+  productId,
+  productData,
+  quantity,
+  stockBefore,
+  stockAfter,
+  managerId,
+  managerName,
+  comment = ''
+}) => ({
+  movementNumber,
+  type,
+  productId,
+  productName: productData.name,
+  barcode: productData.barcode,
+  quantity,
+  stockBefore,
+  stockAfter,
+  managerId,
+  managerName,
+  comment: comment.trim(),
+  createdAt: serverTimestamp()
+});
 
 /**
  * Subscribe to real-time updates for inventory movements
@@ -147,7 +178,7 @@ export const createMovement = async (movementData) => {
     }
 
     const productRef = doc(db, 'products', productId);
-    const counterRef = doc(db, 'counters', 'inventory_movements');
+    const counterRef = doc(db, 'counters', MOVEMENTS_COUNTER_ID);
     const movementDocRef = doc(collection(db, MOVEMENTS_COLLECTION));
 
     return await runTransaction(db, async (transaction) => {
@@ -200,20 +231,18 @@ export const createMovement = async (movementData) => {
       transaction.set(counterRef, { current: nextNum }, { merge: true });
 
       // Save movement document
-      const finalMovementDoc = {
+      const finalMovementDoc = buildMovementDoc({
         movementNumber,
         type,
         productId,
-        productName: productData.name,
-        barcode: productData.barcode,
+        productData,
         quantity: type === MOVEMENT_TYPES.ADJUSTMENT ? Math.abs(stockAfter - stockBefore) : qty,
         stockBefore,
         stockAfter,
         managerId,
         managerName,
-        comment: comment.trim(),
-        createdAt: serverTimestamp()
-      };
+        comment
+      });
 
       transaction.set(movementDocRef, finalMovementDoc);
 
