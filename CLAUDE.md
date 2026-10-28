@@ -931,3 +931,20 @@ After completing an implementation:
 
 11. Do not commit automatically.
     Wait for user approval before committing.
+
+## Codex invocation requirements
+
+When Claude Code runs Codex review:
+
+- Always run Codex in non-interactive mode.
+- stdin must be closed with `</dev/null`.
+- Use a read-only sandbox.
+- Apply a hard timeout of 600 seconds.
+- Do not allow Codex to wait for interactive input.
+- If Codex exceeds the timeout:
+  - terminate only the Codex process;
+  - preserve the current working tree;
+  - report a tooling failure;
+  - do not retry more than once automatically.
+- Codex must not modify project files during review.
+- After Codex finishes, verify `git diff` to confirm the reviewer did not alter the working tree.
