@@ -107,12 +107,15 @@ service cloud.firestore {
     }
 
     // ---------- Counters ----------
-    // Sequential numbers for sales and movements: only `current`, only increasing,
+    // Sequential numbers for sales and movements: only `current`, a positive int that grows
     // by at most 500 per write (Firestore transaction write limit) to prevent jamming the counter.
+    // No "must increase" check: a transaction that lost a race writes a value computed from a
+    // stale read; it must reach the version check (ABORTED -> SDK retry) instead of being
+    // rejected by rules (PERMISSION_DENIED is not retried and would fail concurrent sales).
     match /counters/{counterId} {
       function validCounterValue(previous) {
         return request.resource.data.current is int
-          && request.resource.data.current > previous
+          && request.resource.data.current >= 1
           && request.resource.data.current <= previous + 500;
       }
 
