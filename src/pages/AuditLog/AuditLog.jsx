@@ -86,6 +86,12 @@ const AuditLog = () => {
         return <span className={`${styles.badge} ${styles.badgeInfo}`}>Настройки</span>;
       case 'LOGIN_SUCCESS':
         return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Вход в систему</span>;
+      case 'USER_ROLE_UPDATED':
+        return <span className={`${styles.badge} ${styles.badgeWarning}`}>Смена роли</span>;
+      case 'USER_BLOCKED':
+        return <span className={`${styles.badge} ${styles.badgeDanger}`}>Блокировка пользователя</span>;
+      case 'USER_UNBLOCKED':
+        return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Разблокировка пользователя</span>;
       case 'AUDIT_LOG_CLEARED':
         return <span className={`${styles.badge} ${styles.badgeDanger}`}>Очистка журнала</span>;
       default:
