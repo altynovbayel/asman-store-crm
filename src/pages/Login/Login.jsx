@@ -9,7 +9,7 @@ import Card from '../../components/Card/Card';
 import styles from './Login.module.scss';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, accessError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -79,7 +79,7 @@ const Login = () => {
         
         <Card title="Вход в систему" subtitle="Введите ваши данные для доступа к CRM" className={styles.loginCard}>
           <form onSubmit={handleSubmit} className={styles.form}>
-            {error && <div className={styles.errorAlert}>{error}</div>}
+            {(error || accessError) && <div className={styles.errorAlert}>{error || accessError}</div>}
             
             <Input
               label="Электронная почта (Email)"

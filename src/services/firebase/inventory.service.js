@@ -142,8 +142,14 @@ export const createMovement = async (movementData) => {
     }
 
     const qty = parseInt(quantity, 10);
-    if (isNaN(qty) || qty <= 0) {
-      throw new Error('Количество должно быть положительным целым числом больше нуля.');
+    // ADJUSTMENT sets the target stock, so 0 is allowed; other types move a positive amount
+    const minQty = type === MOVEMENT_TYPES.ADJUSTMENT ? 0 : 1;
+    if (isNaN(qty) || qty < minQty) {
+      throw new Error(
+        type === MOVEMENT_TYPES.ADJUSTMENT
+          ? 'Новый остаток должен быть целым числом не меньше нуля.'
+          : 'Количество должно быть положительным целым числом больше нуля.'
+      );
     }
 
     const productRef = doc(db, 'products', productId);

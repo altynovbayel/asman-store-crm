@@ -1,36 +1,45 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
 import { subscribeProducts } from '../services/firebase/product.service';
+import { useAuth } from './AuthContext';
 
 export const ProductsContext = createContext(null);
 
 export const ProductsProvider = ({ children }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { user } = useAuth();
+  const userId = user?.uid || null;
+  // State is tagged with the user it was loaded for, so data of a previous session is never shown
+  const [state, setState] = useState({ userId: null, products: [], loading: true, error: null });
 
+  // Subscribe only for a signed-in user with access; re-subscribe when the user changes
+  // (a listener rejected by Firestore Rules before login never resumes on its own).
   useEffect(() => {
+    if (!userId) return undefined;
+
     const unsubscribe = subscribeProducts(
       (data) => {
-        setProducts(data);
-        setLoading(false);
-        setError(null);
+        setState({ userId, products: data, loading: false, error: null });
       },
       (err) => {
-        setError(err);
-        setLoading(false);
+        setState((prev) => ({
+          userId,
+          products: prev.userId === userId ? prev.products : [],
+          loading: false,
+          error: err
+        }));
       }
     );
 
     return () => {
       if (unsubscribe) unsubscribe();
     };
-  }, []);
+  }, [userId]);
 
+  const isCurrent = userId !== null && state.userId === userId;
   const value = {
-    products,
-    loading,
-    error
+    products: isCurrent ? state.products : [],
+    loading: userId !== null && (!isCurrent || state.loading),
+    error: isCurrent ? state.error : null
   };
 
   return (

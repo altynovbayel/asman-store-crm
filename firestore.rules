@@ -1,65 +1,162 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
+
+    // ---------- Identity helpers ----------
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-    
-    function isAdmin() {
-      return isAuthenticated() && (
-        getUserData().role == 'admin' ||
-        request.auth.token.role == 'admin'
-      );
+
+    function profilePath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
     }
 
-    // Audit logs rules:
-    // - Only admin can read audit logs
-    // - Authenticated users can create audit log entries via logAction
-    // - Updates are strictly forbidden (immutable log)
-    // - ONLY admin can delete audit logs (for full clearing)
-    match /auditLogs/{logId} {
-      allow read: if isAdmin();
-      allow create: if isAuthenticated();
+    function profile() {
+      return get(profilePath()).data;
+    }
+
+    // Active staff: has users/{uid}, a known role and is not blocked.
+    // Old profiles without `status` are treated as active (same as AuthContext).
+    function isActiveStaff() {
+      return isAuthenticated()
+        && exists(profilePath())
+        && profile().get('status', 'active') != 'blocked'
+        && profile().get('role', '') in ['admin', 'manager'];
+    }
+
+    // Admin rights come only from the profile (no custom claims: they would survive a demotion).
+    function isAdmin() {
+      return isActiveStaff() && profile().get('role', '') == 'admin';
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    function isServerTime(field) {
+      return request.resource.data.get(field, null) == request.time;
+    }
+
+    // ---------- Users ----------
+    // Everyone signed in may read only their own profile (needed to detect blocked status).
+    // Only admin manages profiles; no physical deletion; admin cannot change own role/status.
+    match /users/{userId} {
+      function validProfile() {
+        return request.resource.data.get('role', '') in ['admin', 'manager']
+          && request.resource.data.get('status', 'active') in ['active', 'blocked'];
+      }
+
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAdmin() && validProfile();
+      allow update: if isAdmin() && validProfile()
+        && !(userId == request.auth.uid && changedKeys().hasAny(['role', 'status']));
+      allow delete: if false;
+    }
+
+    // ---------- Settings ----------
+    match /settings/{settingId} {
+      allow read: if isActiveStaff();
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ---------- Products ----------
+    // Admin: full catalog management. Manager: only stock/status changes made by
+    // sales and inventory movements. Stock can never become negative.
+    match /products/{productId} {
+      function validStockChange() {
+        return !changedKeys().hasAny(['quantity'])
+          || (request.resource.data.quantity is number && request.resource.data.quantity >= 0);
+      }
+
+      function managerStockUpdate() {
+        return changedKeys().hasOnly(['status', 'quantity', 'updatedAt'])
+          && (!changedKeys().hasAny(['status']) || request.resource.data.status == 'SOLD');
+      }
+
+      allow read: if isActiveStaff();
+      allow create: if isAdmin()
+        && request.resource.data.get('quantity', 0) is number
+        && request.resource.data.get('quantity', 0) >= 0;
+      allow update: if isActiveStaff() && validStockChange()
+        && (isAdmin() || managerStockUpdate());
+      allow delete: if isAdmin();
+    }
+
+    // ---------- Sales ----------
+    // Sales are historical snapshots: never updated; only admin can cancel (delete).
+    match /sales/{saleId} {
+      allow read: if isActiveStaff();
+      allow create: if isActiveStaff()
+        && request.resource.data.get('managerId', '') == request.auth.uid
+        && isServerTime('createdAt');
       allow update: if false;
       allow delete: if isAdmin();
     }
 
-    // Role-based protection for users collection
-    match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // Role-based protection for settings collection
-    match /settings/{settingId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
-
-    // Operational collections
-    match /products/{productId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-
-    match /sales/{saleId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-    }
-
+    // ---------- Inventory movements ----------
+    // Immutable audit trail of stock changes.
     match /inventory_movements/{movementId} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow read: if isActiveStaff();
+      allow create: if isActiveStaff()
+        && request.resource.data.get('managerId', '') == request.auth.uid
+        && request.resource.data.get('type', '') in ['IN', 'OUT', 'RETURN', 'ADJUSTMENT']
+        && isServerTime('createdAt');
+      allow update, delete: if false;
     }
 
+    // ---------- Counters ----------
+    // Sequential numbers for sales and movements: only `current`, only increasing,
+    // by at most 500 per write (Firestore transaction write limit) to prevent jamming the counter.
     match /counters/{counterId} {
-      allow read, write: if isAuthenticated();
+      function validCounterValue(previous) {
+        return request.resource.data.current is int
+          && request.resource.data.current > previous
+          && request.resource.data.current <= previous + 500;
+      }
+
+      allow read: if isActiveStaff();
+      allow create: if isActiveStaff()
+        && counterId in ['sales', 'inventory_movements']
+        && request.resource.data.keys().hasOnly(['current'])
+        && validCounterValue(0);
+      allow update: if isActiveStaff()
+        && changedKeys().hasOnly(['current'])
+        && validCounterValue(resource.data.get('current', 0));
+      allow delete: if false;
     }
+
+    // ---------- Audit logs ----------
+    // Admin-only read/clear. Entries are immutable and must carry the caller's
+    // real identity (userId / role / userName from their own profile or token).
+    // NOTE: action/description content cannot be verified by rules; see report.
+    match /auditLogs/{logId} {
+      function validIdentity() {
+        let d = request.resource.data;
+        let p = profile();
+        return d.keys().hasOnly(['timestamp', 'userId', 'userName', 'role', 'action', 'description', 'metadata'])
+          && d.get('userId', '') == request.auth.uid
+          && d.get('role', '') == p.get('role', '')
+          && d.get('userName', '') in [
+            p.get('displayName', ''),
+            p.get('name', ''),
+            p.get('email', ''),
+            request.auth.token.get('email', '')
+          ]
+          && d.get('userName', '') != ''
+          && d.get('action', null) is string
+          && d.get('description', null) is string
+          && isServerTime('timestamp');
+      }
+
+      allow read: if isAdmin();
+      allow create: if isActiveStaff() && validIdentity()
+        && (request.resource.data.action != 'AUDIT_LOG_CLEARED' || isAdmin());
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // Everything else is closed by default.
   }
 }

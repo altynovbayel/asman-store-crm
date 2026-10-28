@@ -173,14 +173,15 @@ const ProductForm = ({
       />
 
       <div className={styles.rowFields}>
+        {/* On edit, stock is changed only via inventory movements (IN / ADJUSTMENT) */}
         <Input
-          label="Количество"
+          label={initialData ? 'Количество (изменяется через «Движение товаров»)' : 'Количество'}
           type="number"
           placeholder="0"
           value={formData.quantity}
           onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
           error={errors.quantity}
-          disabled={loading}
+          disabled={loading || !!initialData}
           required
         />
       </div>

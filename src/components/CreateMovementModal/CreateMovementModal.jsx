@@ -61,8 +61,10 @@ const CreateMovementModal = ({
       newErrors.quantity = 'Введите количество';
     } else {
       const qty = parseInt(formData.quantity, 10);
-      if (isNaN(qty) || qty <= 0) {
-        newErrors.quantity = 'Количество должно быть больше нуля';
+      // ADJUSTMENT sets the target stock, so 0 is allowed
+      const minQty = formData.type === MOVEMENT_TYPES.ADJUSTMENT ? 0 : 1;
+      if (isNaN(qty) || qty < minQty) {
+        newErrors.quantity = minQty === 0 ? 'Новый остаток не может быть отрицательным' : 'Количество должно быть больше нуля';
       } else if (selectedProduct) {
         // Stock checks for OUT operations
         if (formData.type === MOVEMENT_TYPES.OUT && qty > (selectedProduct.quantity || 0)) {

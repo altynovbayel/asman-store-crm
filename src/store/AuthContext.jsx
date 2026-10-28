@@ -5,7 +5,7 @@ import {
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 
 import Loader from '../components/Loader/Loader';
@@ -13,101 +13,119 @@ import { ROLES } from '../constants/roles';
 
 const AuthContext = createContext(null);
 
+/**
+ * Returns a user-facing reason why the profile has no CRM access, or null if access is allowed.
+ * Mirrors isActiveStaff() in firestore.rules.
+ */
+const getAccessDeniedMessage = (profileData) => {
+  if (!profileData) {
+    return 'Профиль пользователя не найден. Обратитесь к администратору.';
+  }
+  if (profileData.status === 'blocked') {
+    return 'Ваш аккаунт заблокирован администратором.';
+  }
+  if (!Object.values(ROLES).includes(profileData.role)) {
+    return 'Для вашего аккаунта не назначена роль. Обратитесь к администратору.';
+  }
+  return null;
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Reason the current account was signed out by the access check (shown on the login page)
+  const [accessError, setAccessError] = useState('');
 
   // Expose role checks
   const isAdmin = user?.role === ROLES.ADMIN;
   const isManager = user?.role === ROLES.MANAGER || user?.role === ROLES.ADMIN; // admin inherits manager permissions
 
-  // Listen to auth state changes
+  // Listen to auth state changes and keep the user's own profile in sync,
+  // so blocking, role changes or profile removal take effect in an open session.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      try {
-        if (firebaseUser) {
-          // Fetch user profile from Firestore
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
+    let unsubscribeProfile = null;
+    const stopProfile = () => {
+      if (unsubscribeProfile) {
+        unsubscribeProfile();
+        unsubscribeProfile = null;
+      }
+    };
 
-          if (userDocSnap.exists()) {
-            const profileData = userDocSnap.data();
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      stopProfile();
 
-            // Check if user is blocked
-            if (profileData.status === 'blocked') {
-              await signOut(auth);
-              setUser(null);
-            } else {
-              setUser({
-                uid: firebaseUser.uid,
-                email: firebaseUser.email,
-                ...profileData
-              });
-            }
+      if (!firebaseUser) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      unsubscribeProfile = onSnapshot(
+        doc(db, 'users', firebaseUser.uid),
+        { includeMetadataChanges: true },
+        (userDocSnap) => {
+          const profileData = userDocSnap.exists() ? userDocSnap.data() : null;
+
+          // No profile, unknown role or blocked: no access (Firestore Rules deny it as well).
+          // A denial is acted on only when confirmed by the server, not from a stale local cache.
+          const deniedMessage = getAccessDeniedMessage(profileData);
+          if (deniedMessage && userDocSnap.metadata.fromCache) {
+            return;
+          }
+          if (deniedMessage) {
+            setAccessError(deniedMessage);
+            setUser(null);
+            signOut(auth).catch((error) => console.error('Error signing out denied user:', error));
           } else {
-            // Fallback if firestore document doesn't exist yet (e.g. initial setup)
             setUser({
               uid: firebaseUser.uid,
               email: firebaseUser.email,
-              role: 'operator', // default role
-              status: 'active'
+              ...profileData
             });
           }
-        } else {
+          setLoading(false);
+        },
+        (error) => {
+          console.error('Error fetching auth user profile:', error);
           setUser(null);
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching auth user profile:', error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
+      );
     });
 
-    return () => unsubscribe();
+    return () => {
+      stopProfile();
+      unsubscribeAuth();
+    };
   }, []);
 
-  // Login handler
+  // Login handler.
+  // Does not toggle the global loading flag: that would unmount the login page
+  // and lose the error message shown to the user.
   const login = async (email, password) => {
-    setLoading(true);
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
+    setAccessError('');
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const firebaseUser = userCredential.user;
 
-      // Fetch user profile to verify status before resolving login
-      const userDocRef = doc(db, 'users', firebaseUser.uid);
-      const userDocSnap = await getDoc(userDocRef);
+    // Fetch user profile to verify access before resolving login
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDocSnap = await getDoc(userDocRef);
 
-      if (userDocSnap.exists()) {
-        const profileData = userDocSnap.data();
+    const profileData = userDocSnap.exists() ? userDocSnap.data() : null;
 
-        if (profileData.status === 'blocked') {
-          await signOut(auth);
-          throw new Error('Ваш аккаунт заблокирован администратором.');
-        }
-
-        const mergedUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          ...profileData
-        };
-        setUser(mergedUser);
-        return mergedUser;
-      } else {
-        // Fallback
-        const mergedUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          role: 'operator',
-          status: 'active'
-        };
-        setUser(mergedUser);
-        return mergedUser;
-      }
-    } catch (error) {
-      setLoading(false);
-      throw error;
+    const deniedMessage = getAccessDeniedMessage(profileData);
+    if (deniedMessage) {
+      await signOut(auth);
+      throw new Error(deniedMessage);
     }
+
+    const mergedUser = {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email,
+      ...profileData
+    };
+    setUser(mergedUser);
+    return mergedUser;
   };
 
   // Logout handler
@@ -126,6 +144,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    accessError,
     login,
     logout,
     isAdmin,

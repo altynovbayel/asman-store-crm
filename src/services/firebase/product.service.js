@@ -125,17 +125,19 @@ export const createProduct = async (productData) => {
 };
 
 /**
- * Update an existing product
+ * Update an existing product's catalog fields.
+ * Stock (quantity) and status are intentionally NOT written here: they change only
+ * through sales and inventory movements (IN / ADJUSTMENT), which run in transactions.
+ * Writing quantity from a stale edit form would overwrite sales made in the meantime.
  */
 export const updateProduct = async (id, productData) => {
   try {
     const docRef = doc(db, PRODUCTS_COLLECTION, id);
-    
+
     const formattedData = {
       name: productData.name.trim(),
       type: productData.type,
       barcode: productData.barcode.trim(),
-      quantity: Math.max(0, parseInt(productData.quantity, 10) || 0),
       sellingPrice: Math.max(0, parseFloat(productData.sellingPrice) || 0),
       purchasePrice: Math.max(0, parseFloat(productData.purchasePrice) || 0),
       price: Math.max(0, parseFloat(productData.sellingPrice) || 0), // compatibility
