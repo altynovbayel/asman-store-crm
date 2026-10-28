@@ -96,32 +96,40 @@ export const calculateEmployeeStats = (sales = []) => {
 };
 
 /**
- * Calculates the total sum of product units in stock.
+ * Calculates the total number of units currently in stock.
+ * Uses the same stock rules as Dashboard (see getUnitsInStock): AVAILABLE laptops only,
+ * accessories by positive quantity.
  * @param {Array} products 
  * @returns {number}
  */
 export const calculateTotalProducts = (products = []) => {
-  return products.reduce((sum, p) => sum + (p.quantity || 0), 0);
+  const stock = calculateCurrentStock(products);
+  return stock.laptops + stock.accessories;
 };
 
 /**
- * Calculates the total purchase cost value of the current inventory.
+ * Calculates the total purchase cost value of the current inventory
+ * (same value as calculateCurrentStock().purchaseValue shown on Dashboard).
  * @param {Array} products 
  * @returns {number}
  */
 export const calculateInventoryPurchaseValue = (products = []) => {
-  return products.reduce((sum, p) => sum + ((p.purchasePrice || 0) * (p.quantity || 0)), 0);
+  return calculateCurrentStock(products).purchaseValue;
 };
 
 /**
- * Calculates the total retail value of the current inventory.
+ * Calculates the total retail value of the current inventory:
+ * units in stock (getUnitsInStock) x current selling price (missing price counts as 0).
  * @param {Array} products 
  * @returns {number}
  */
 export const calculateInventoryRetailValue = (products = []) => {
   return products.reduce((sum, p) => {
-    const sellingPrice = p.sellingPrice !== undefined ? p.sellingPrice : (p.price || 0);
-    return sum + (sellingPrice * (p.quantity || 0));
+    const units = getUnitsInStock(p);
+    if (units === 0) return sum;
+    const price = Number(p.sellingPrice !== undefined ? p.sellingPrice : p.price);
+    const unitPrice = Number.isFinite(price) && price > 0 ? price : 0;
+    return sum + (unitPrice * units);
   }, 0);
 };
 
