@@ -65,7 +65,9 @@ export const calculateAverageCheck = (sales = []) => {
  * @returns {Array} Array of manager statistics
  */
 export const calculateEmployeeStats = (sales = []) => {
-  const managerGroups = {};
+  // No prototype: a managerName such as "__proto__" or "constructor" must not
+  // resolve to (and modify) Object.prototype; key order stays the same as with {}
+  const managerGroups = Object.create(null);
 
   sales.forEach((sale) => {
     const manager = sale.managerName || 'Неизвестно';
