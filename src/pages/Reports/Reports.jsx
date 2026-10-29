@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { TrendingUp, Coins, ShoppingBag, Receipt, Calendar, Package } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { TrendingUp, Coins, ShoppingBag, Receipt, Calendar, Package, FileSpreadsheet, FileText } from 'lucide-react';
 import Card from '../../components/Card/Card';
 import Loader from '../../components/Loader/Loader';
 import Empty from '../../components/Empty/Empty';
 import Table from '../../components/Table/Table';
+import Button from '../../components/Button/Button';
 import SaleDetailsModal from '../../components/SaleDetailsModal/SaleDetailsModal';
 import { useToast } from '../../store/ToastContext';
 import { useAuth } from '../../store/AuthContext';
@@ -11,6 +12,9 @@ import { useProducts } from '../../store/ProductsContext';
 import { getSalesForDateRange } from './services/reports.service';
 import { getDateRange } from './utils/dateRange';
 import { deleteSale } from '../../services/firebase/sales.service';
+import { getStoreSettings } from '../../services/firebase/settings.service';
+import { DEFAULT_SETTINGS } from '../../constants/storeSettingsDefaults';
+import { buildReportExportData } from './utils/exportData';
 import {
   calculateRevenue,
   calculateProfit,
@@ -37,8 +41,13 @@ const Reports = () => {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [sales, setSales] = useState([]);
+  // Period the shown `sales` were loaded for (exports use exactly this period)
+  const [loadedRange, setLoadedRange] = useState(null);
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [exporting, setExporting] = useState(null); // null | 'xlsx' | 'pdf'
+  const exportingRef = useRef(false);
+  const requestIdRef = useRef(0);
 
   // SaleDetailsModal states
   const [selectedSale, setSelectedSale] = useState(null);
@@ -46,14 +55,23 @@ const Reports = () => {
 
   const fetchSalesData = useCallback(async (range) => {
     if (!range) return;
+    // Only the latest request may update the page: a slower response for a previously
+    // selected period must not overwrite the data of the current one
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     try {
       const fetched = await getSalesForDateRange(range.startDate, range.endDate);
+      if (requestId !== requestIdRef.current) return;
       setSales(fetched);
+      setLoadedRange(range);
     } catch (err) {
-      showError(err.message || 'Не удалось загрузить отчет.');
+      if (requestId === requestIdRef.current) {
+        showError(err.message || 'Не удалось загрузить отчет.');
+      }
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [showError]);
 
@@ -123,6 +141,52 @@ const Reports = () => {
   const invPurchaseVal = useMemo(() => calculateInventoryPurchaseValue(products), [products]);
   const invRetailVal = useMemo(() => calculateInventoryRetailValue(products), [products]);
   const invPotentialProfit = useMemo(() => calculatePotentialProfit(products), [products]);
+
+  // Export uses the data already shown on the page (no extra sales query)
+  const handleExport = async (kind) => {
+    if (exportingRef.current || loading || !loadedRange) return;
+    exportingRef.current = true;
+    setExporting(kind);
+    try {
+      let storeName = DEFAULT_SETTINGS.storeName;
+      try {
+        storeName = (await getStoreSettings()).storeName || storeName;
+      } catch {
+        // Settings are optional for the report title; keep the default name
+      }
+
+      const data = buildReportExportData({
+        range: loadedRange,
+        sales,
+        kpi: { revenue, profit, salesCount, averageCheck },
+        employees: employeeData,
+        products,
+        inventory: {
+          totalUnits: totalInvProducts,
+          purchaseValue: invPurchaseVal,
+          retailValue: invRetailVal,
+          potentialProfit: invPotentialProfit
+        },
+        storeName
+      });
+
+      if (kind === 'xlsx') {
+        const { downloadReportXlsx } = await import('./utils/exportXlsx');
+        await downloadReportXlsx(data);
+        showSuccess('Отчёт Excel скачан');
+      } else {
+        const { downloadReportPdf } = await import('./utils/exportPdf');
+        await downloadReportPdf(data);
+        showSuccess('PDF отчёт скачан');
+      }
+    } catch (err) {
+      console.error('Report export failed:', err);
+      showError(`Не удалось сформировать отчёт: ${err.message || 'неизвестная ошибка'}`);
+    } finally {
+      exportingRef.current = false;
+      setExporting(null);
+    }
+  };
 
   const kpiStats = [
     {
@@ -269,6 +333,30 @@ const Reports = () => {
     <div className={styles.reportsPage}>
       <div className={styles.headerRow}>
         <h1 className={styles.pageTitle}>Аналитические отчеты</h1>
+        {isAdmin && (
+          <div className={styles.exportActions}>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={FileSpreadsheet}
+              onClick={() => handleExport('xlsx')}
+              loading={exporting === 'xlsx'}
+              disabled={!!exporting || loading || !loadedRange}
+            >
+              Скачать Excel
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={FileText}
+              onClick={() => handleExport('pdf')}
+              loading={exporting === 'pdf'}
+              disabled={!!exporting || loading || !loadedRange}
+            >
+              Скачать PDF
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Tabs Menu */}

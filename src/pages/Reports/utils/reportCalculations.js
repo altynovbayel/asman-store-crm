@@ -126,13 +126,7 @@ export const calculateInventoryPurchaseValue = (products = []) => {
  * @returns {number}
  */
 export const calculateInventoryRetailValue = (products = []) => {
-  return products.reduce((sum, p) => {
-    const units = getUnitsInStock(p);
-    if (units === 0) return sum;
-    const price = Number(p.sellingPrice !== undefined ? p.sellingPrice : p.price);
-    const unitPrice = Number.isFinite(price) && price > 0 ? price : 0;
-    return sum + (unitPrice * units);
-  }, 0);
+  return products.reduce((sum, p) => sum + getStockValuation(p).retailValue, 0);
 };
 
 /**
@@ -174,17 +168,37 @@ export const getUnitsInStock = (product) => {
 export const calculateCurrentStock = (products = []) => {
   return products.reduce(
     (acc, product) => {
-      const units = getUnitsInStock(product);
+      const { units, purchaseValue } = getStockValuation(product);
       if (units === 0) return acc;
-
-      const price = Number(product.purchasePrice);
-      const unitCost = Number.isFinite(price) && price > 0 ? price : 0;
 
       if (product.type === PRODUCT_TYPES.LAPTOP) acc.laptops += units;
       else acc.accessories += units;
-      acc.purchaseValue += unitCost * units;
+      acc.purchaseValue += purchaseValue;
       return acc;
     },
     { laptops: 0, accessories: 0, purchaseValue: 0 }
   );
+};
+
+/** Price as a non-negative number; missing, non-numeric or negative prices count as 0. */
+const toStockPrice = (value) => {
+  const price = Number(value);
+  return Number.isFinite(price) && price > 0 ? price : 0;
+};
+
+/**
+ * Stock valuation of a single product, shared by the stock totals above and per-row exports:
+ * units in stock (getUnitsInStock), current purchase/selling unit prices and line values.
+ * The selling price falls back to the legacy `price` field of old documents.
+ * @param {Object} product
+ * @returns {{ units: number, unitCost: number, unitPrice: number, purchaseValue: number, retailValue: number }}
+ */
+export const getStockValuation = (product) => {
+  const units = getUnitsInStock(product);
+  if (units === 0) {
+    return { units: 0, unitCost: 0, unitPrice: 0, purchaseValue: 0, retailValue: 0 };
+  }
+  const unitCost = toStockPrice(product.purchasePrice);
+  const unitPrice = toStockPrice(product.sellingPrice !== undefined ? product.sellingPrice : product.price);
+  return { units, unitCost, unitPrice, purchaseValue: unitCost * units, retailValue: unitPrice * units };
 };
