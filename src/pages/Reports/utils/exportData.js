@@ -6,7 +6,7 @@
  */
 import { getStockValuation } from './reportCalculations';
 import { getProductDisplayName } from '../../../utils/getProductDisplayName';
-import { PAYMENT_METHOD_LABELS } from '../../../constants/paymentMethods';
+import { formatSalePaymentMethod } from '../../../utils/getPaymentMethodLabel';
 import { PRODUCT_TYPES } from '../../../constants/productTypes';
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -67,14 +67,6 @@ export const formatPeriodLabel = (range) => {
 export const buildReportFileName = (range, extension) =>
   `asman-store-report-${isoDay(range.startDate)}_${isoDay(range.endDate)}.${extension}`;
 
-/** Payment method label as shown in sale details, e.g. "М+ (3 мес)". */
-export const getPaymentLabel = (sale) => {
-  const method = toText(sale?.paymentMethod);
-  const label = (Object.hasOwn(PAYMENT_METHOD_LABELS, method) && PAYMENT_METHOD_LABELS[method]) || method;
-  const term = toNumber(sale?.installmentTerm);
-  return term > 0 && label ? `${label} (${term} мес)` : label;
-};
-
 /**
  * One row per sold item, using only the sale's historical snapshot.
  * Unit price / discount fallbacks are the same as in calculateSingleSaleProfit.
@@ -88,7 +80,7 @@ export const buildSaleItemRows = (sales = []) => {
       date: toJsDate(sale.createdAt),
       saleNumber: toText(sale.saleNumber),
       manager: toText(sale.managerName),
-      payment: getPaymentLabel(sale),
+      payment: formatSalePaymentMethod(sale),
       customer: toText(sale.customerName),
       phone: toText(sale.customerPhone)
     };

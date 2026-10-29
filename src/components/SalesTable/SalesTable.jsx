@@ -1,7 +1,7 @@
 import Table from '../Table/Table';
 import { formatDate } from '../../utils/formatDate';
 import { formatPrice } from '../../utils/formatPrice';
-import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
+import { formatSalePaymentMethod } from '../../utils/getPaymentMethodLabel';
 import styles from './SalesTable.module.scss';
 
 const SalesTable = ({
@@ -36,13 +36,7 @@ const SalesTable = ({
       title: 'Способ оплаты',
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
-      render: (method, record) => {
-        const label = PAYMENT_METHOD_LABELS[method] || method || '—';
-        if (record.installmentTerm) {
-          return `${label} (${record.installmentTerm} мес)`;
-        }
-        return label;
-      }
+      render: (_, record) => formatSalePaymentMethod(record) || '—'
     },
     {
       title: 'Позиций',

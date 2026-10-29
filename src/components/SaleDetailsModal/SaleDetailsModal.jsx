@@ -7,7 +7,7 @@ import { formatDate } from '../../utils/formatDate';
 import { formatPrice } from '../../utils/formatPrice';
 import { getProductDisplayName } from '../../utils/getProductDisplayName';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
-import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
+import { formatSalePaymentMethod } from '../../utils/getPaymentMethodLabel';
 import WarrantyModal from '../../pages/Warranty/components/WarrantyModal';
 import styles from './SaleDetailsModal.module.scss';
 
@@ -111,13 +111,7 @@ const SaleDetailsModal = ({
               <div className={styles.metaItem}>
                 <span className={styles.label}>Способ оплаты:</span>
                 <span className={styles.value}>
-                  {(() => {
-                    const label = PAYMENT_METHOD_LABELS[sale.paymentMethod] || sale.paymentMethod || '—';
-                    if (sale.installmentTerm) {
-                      return `${label} (${sale.installmentTerm} мес${sale.installmentDiscount ? `, скидка ${sale.installmentDiscount}%` : ''})`;
-                    }
-                    return label;
-                  })()}
+                  {formatSalePaymentMethod(sale, { withDiscount: true }) || '—'}
                 </span>
               </div>
               {sale.kitIncluded && (

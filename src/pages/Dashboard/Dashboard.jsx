@@ -27,7 +27,7 @@ import {
   calculateCurrentStock
 } from '../Reports/utils/reportCalculations';
 import { getRecentSales } from '../../services/firebase/sales.service';
-import { PAYMENT_METHOD_LABELS } from '../../constants/paymentMethods';
+import { getPaymentMethodLabel } from '../../utils/getPaymentMethodLabel';
 import { formatPrice } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
 import styles from './Dashboard.module.scss';
@@ -171,7 +171,7 @@ const Dashboard = () => {
       title: 'Оплата',
       dataIndex: 'paymentMethod',
       key: 'paymentMethod',
-      render: (method) => PAYMENT_METHOD_LABELS[method] || method || '—'
+      render: (method) => getPaymentMethodLabel(method) || '—'
     }
   ];
 
