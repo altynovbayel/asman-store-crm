@@ -8,6 +8,8 @@ import { formatPrice } from '../../utils/formatPrice';
 import { getProductDisplayName } from '../../utils/getProductDisplayName';
 import { PRODUCT_TYPES } from '../../constants/productTypes';
 import { formatSalePaymentMethod } from '../../utils/getPaymentMethodLabel';
+import { toSafeNumber, toSafeQuantity } from '../../utils/safeNumber';
+import { getSaleItems } from '../../pages/Reports/utils/reportCalculations';
 import WarrantyModal from '../../pages/Warranty/components/WarrantyModal';
 import styles from './SaleDetailsModal.module.scss';
 
@@ -154,10 +156,11 @@ const SaleDetailsModal = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {sale.items.map((item, idx) => {
-                      const price = item.unitPrice !== undefined ? item.unitPrice : item.price;
-                      const itemDiscTotal = item.discount !== undefined ? item.discount : (item.itemDiscount || 0);
-                      const finalPrice = item.finalUnitPrice !== undefined ? item.finalUnitPrice : Math.max(0, price - itemDiscTotal);
+                    {getSaleItems(sale).map((item, idx) => {
+                      // Stored snapshot values are read safely (old documents may hold malformed numbers)
+                      const price = toSafeNumber(item.unitPrice !== undefined ? item.unitPrice : item.price);
+                      const itemDiscTotal = item.discount !== undefined ? toSafeNumber(item.discount) : toSafeNumber(item.itemDiscount);
+                      const finalPrice = item.finalUnitPrice !== undefined ? toSafeNumber(item.finalUnitPrice) : Math.max(0, price - itemDiscTotal);
 
                       return (
                         <tr key={idx}>
@@ -175,9 +178,9 @@ const SaleDetailsModal = ({
                           <td className={styles.numCol}>{formatPrice(price)} сом</td>
                           <td className={styles.numCol}>{itemDiscTotal > 0 ? `${formatPrice(itemDiscTotal)} сом` : '—'}</td>
                           <td className={styles.numCol}>{formatPrice(finalPrice)} сом</td>
-                          <td className={styles.numCol}>{item.quantity} шт</td>
+                          <td className={styles.numCol}>{toSafeQuantity(item.quantity)} шт</td>
                           <td className={`${styles.numCol} ${styles.rowTotal}`}>
-                            {formatPrice(item.total)} сом
+                            {formatPrice(toSafeNumber(item.total))} сом
                           </td>
                         </tr>
                       );
@@ -191,29 +194,29 @@ const SaleDetailsModal = ({
             <div className={styles.totalsSection}>
               <div className={styles.totalsRow}>
                 <span>Промежуточный итог:</span>
-                <span>{formatPrice(sale.subtotal)} сом</span>
+                <span>{formatPrice(toSafeNumber(sale.subtotal))} сом</span>
               </div>
-              {sale.installmentDiscountTotal > 0 && (
+              {toSafeNumber(sale.installmentDiscountTotal) > 0 && (
                 <div className={styles.totalsRow}>
-                  <span>Скидка по рассрочке ({sale.installmentDiscount}%):</span>
-                  <span className={styles.discountText}>-{formatPrice(sale.installmentDiscountTotal)} сом</span>
+                  <span>Скидка по рассрочке ({toSafeNumber(sale.installmentDiscount)}%):</span>
+                  <span className={styles.discountText}>-{formatPrice(toSafeNumber(sale.installmentDiscountTotal))} сом</span>
                 </div>
               )}
-              {sale.kitDiscount > 0 && (
+              {toSafeNumber(sale.kitDiscount) > 0 && (
                 <div className={styles.totalsRow}>
                   <span>Скидка на комплект:</span>
-                  <span className={styles.discountText}>-{formatPrice(sale.kitDiscount)} сом</span>
+                  <span className={styles.discountText}>-{formatPrice(toSafeNumber(sale.kitDiscount))} сом</span>
                 </div>
               )}
               <div className={styles.totalsRow}>
                 <span>Общая скидка:</span>
                 <span className={styles.discountText}>
-                  -{formatPrice(sale.totalDiscount !== undefined ? sale.totalDiscount : sale.discount)} сом
+                  -{formatPrice(toSafeNumber(sale.totalDiscount !== undefined ? sale.totalDiscount : sale.discount))} сом
                 </span>
               </div>
               <div className={`${styles.totalsRow} ${styles.grandTotal}`}>
                 <span>Всего оплачено:</span>
-                <span>{formatPrice(sale.grandTotal)} сом</span>
+                <span>{formatPrice(toSafeNumber(sale.grandTotal))} сом</span>
               </div>
             </div>
           </div>

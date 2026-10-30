@@ -4,7 +4,8 @@
  * KPI, employee stats and stock valuation come from reportCalculations.js,
  * sale rows come from historical sale snapshots only.
  */
-import { getStockValuation } from './reportCalculations';
+import { getStockValuation, getSaleItems, getSaleItemSnapshot } from './reportCalculations';
+import { toSafeNumber, toFiniteNumber } from '../../../utils/safeNumber';
 import { getProductDisplayName } from '../../../utils/getProductDisplayName';
 import { formatSalePaymentMethod } from '../../../utils/getPaymentMethodLabel';
 import { PRODUCT_TYPES } from '../../../constants/productTypes';
@@ -16,12 +17,6 @@ export const toJsDate = (value) => {
   if (!value) return null;
   const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
   return date instanceof Date && !Number.isNaN(date.getTime()) ? date : null;
-};
-
-/** Finite number or 0 (old documents may hold strings or nothing). */
-const toNumber = (value) => {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : 0;
 };
 
 /** Plain text for a cell: strings as-is, other primitives stringified, objects dropped. */
@@ -84,20 +79,18 @@ export const buildSaleItemRows = (sales = []) => {
       customer: toText(sale.customerName),
       phone: toText(sale.customerPhone)
     };
-    const items = Array.isArray(sale.items) ? sale.items.filter(Boolean) : [];
+    const items = getSaleItems(sale);
 
     if (items.length === 0) {
-      rows.push({ ...base, product: '', barcode: '', quantity: 0, unitPrice: 0, unitDiscount: 0, lineTotal: toNumber(sale.grandTotal) });
+      rows.push({ ...base, product: '', barcode: '', quantity: 0, unitPrice: 0, unitDiscount: 0, lineTotal: toSafeNumber(sale.grandTotal) });
       continue;
     }
 
     for (const item of items) {
-      const quantity = toNumber(item.quantity);
-      const unitPrice = toNumber(item.salePrice !== undefined ? item.salePrice : (item.unitPrice || item.price || 0));
-      const unitDiscount = toNumber(item.discount !== undefined ? item.discount : (item.itemDiscount || 0));
-      const lineTotal = item.total !== undefined && Number.isFinite(Number(item.total))
-        ? Number(item.total)
-        : Math.max(0, unitPrice - unitDiscount) * quantity;
+      // Same operands as the Reports profit calculation
+      const { salePrice: unitPrice, discount: unitDiscount, quantity } = getSaleItemSnapshot(item);
+      const storedTotal = toSafeNumber(item.total, null);
+      const lineTotal = storedTotal !== null ? storedTotal : Math.max(0, unitPrice - unitDiscount) * quantity;
 
       rows.push({
         ...base,
@@ -166,25 +159,26 @@ export const buildReportExportData = ({
     xlsx: buildReportFileName(range, 'xlsx'),
     pdf: buildReportFileName(range, 'pdf')
   },
+  // Calculated totals: finite check only (a period sum may legitimately exceed a single stored amount)
   kpi: {
-    revenue: toNumber(kpi?.revenue),
-    profit: toNumber(kpi?.profit),
-    salesCount: toNumber(kpi?.salesCount),
-    averageCheck: toNumber(kpi?.averageCheck)
+    revenue: toFiniteNumber(kpi?.revenue),
+    profit: toFiniteNumber(kpi?.profit),
+    salesCount: toFiniteNumber(kpi?.salesCount),
+    averageCheck: toFiniteNumber(kpi?.averageCheck)
   },
   inventory: {
-    totalUnits: toNumber(inventory?.totalUnits),
-    purchaseValue: toNumber(inventory?.purchaseValue),
-    retailValue: toNumber(inventory?.retailValue),
-    potentialProfit: toNumber(inventory?.potentialProfit)
+    totalUnits: toFiniteNumber(inventory?.totalUnits),
+    purchaseValue: toFiniteNumber(inventory?.purchaseValue),
+    retailValue: toFiniteNumber(inventory?.retailValue),
+    potentialProfit: toFiniteNumber(inventory?.potentialProfit)
   },
   saleRows: buildSaleItemRows(sales),
   employeeRows: employees.map((e) => ({
     manager: toText(e.manager),
-    salesCount: toNumber(e.salesCount),
-    revenue: toNumber(e.revenue),
-    profit: toNumber(e.profit),
-    averageCheck: toNumber(e.averageCheck)
+    salesCount: toFiniteNumber(e.salesCount),
+    revenue: toFiniteNumber(e.revenue),
+    profit: toFiniteNumber(e.profit),
+    averageCheck: toFiniteNumber(e.averageCheck)
   })),
   stockRows: buildStockRows(products)
 });

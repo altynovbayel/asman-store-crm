@@ -8,6 +8,7 @@ import SalesTable from '../../components/SalesTable/SalesTable';
 import SaleDetailsModal from '../../components/SaleDetailsModal/SaleDetailsModal';
 import { subscribeSales, deleteSale } from '../../services/firebase/sales.service';
 import { logAction } from '../../services/firebase/audit.service';
+import { toSafeNumber } from '../../utils/safeNumber';
 import styles from './SalesHistory.module.scss';
 
 const SalesHistory = () => {
@@ -75,7 +76,7 @@ const SalesHistory = () => {
       await deleteSale(id, managerId, managerName);
       showSuccess('Продажа успешно удалена, складские остатки восстановлены.');
       if (selectedSale) {
-        await logAction(user, 'SALE_DELETED', `Удалена продажа № ${selectedSale.saleNumber} на сумму ${selectedSale.grandTotal} сом`);
+        await logAction(user, 'SALE_DELETED', `Удалена продажа № ${selectedSale.saleNumber} на сумму ${toSafeNumber(selectedSale.grandTotal)} сом`);
       }
       setIsDetailsOpen(false);
       setSelectedSale(null);

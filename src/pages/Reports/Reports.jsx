@@ -21,6 +21,7 @@ import {
   calculateSalesCount,
   calculateAverageCheck,
   calculateSingleSaleProfit,
+  calculateSaleUnitsCount,
   calculateEmployeeStats,
   calculateTotalProducts,
   calculateInventoryPurchaseValue,
@@ -276,10 +277,7 @@ const Reports = () => {
       title: 'Товаров',
       dataIndex: 'items',
       key: 'items',
-      render: (items) => {
-        const qty = items ? items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
-        return `${qty} шт`;
-      }
+      render: (items) => `${calculateSaleUnitsCount({ items })} шт`
     },
     {
       title: 'Выручка',

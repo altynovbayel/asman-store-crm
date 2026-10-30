@@ -86,13 +86,56 @@ service cloud.firestore {
 
     // ---------- Sales ----------
     // Sales are historical snapshots: never updated; only admin can cancel (delete).
-    // New sales must use a current payment method (src/constants/paymentMethods.js).
+    // New sales must use a current payment method (src/constants/paymentMethods.js)
+    // and well-typed numbers (as written by createSale).
     // Only create is checked: existing documents are never updated, so old values stay readable.
     match /sales/{saleId} {
+      // Finite non-negative amount: rejects strings, maps, lists, NaN (NaN >= 0 is false) and Infinity
+      function isAmount(v) {
+        return v is number && v >= 0 && v < 1000000000000;
+      }
+
+      // Values are bound with `let` once: every reference to a function argument is
+      // re-evaluated and counts toward the 1000-expressions-per-request limit.
+      function isValidSaleItem(item) {
+        let quantity = item.get('quantity', null);
+        let purchasePrice = item.get('purchasePrice', null);
+        let sellingPrice = item.get('sellingPrice', null);
+        let salePrice = item.get('salePrice', null);
+        let discount = item.get('discount', null);
+        return quantity is int && quantity > 0 && quantity <= 9007199254740991
+          && isAmount(purchasePrice) && isAmount(sellingPrice)
+          && isAmount(salePrice) && isAmount(discount);
+      }
+
+      // Rules have no loops and stop at 1000 evaluated expressions per request: measured on the
+      // emulator, at most 5 items fit. Only the first 3 items are type-checked, leaving headroom;
+      // longer receipts are NOT rejected (their remaining items are not type-checked here —
+      // the app reads stored numbers safely anyway). Re-measure if these rules grow.
+      function isValidItemAt(items, i) {
+        let count = items.size();
+        return count <= i || (items[i] is map && isValidSaleItem(items[i]));
+      }
+
+      function hasValidNumbers(data) {
+        let items = data.get('items', null);
+        return isAmount(data.get('grandTotal', null))
+          && isAmount(data.get('subtotal', null))
+          && isAmount(data.get('totalDiscount', null))
+          && (!('kitDiscount' in data) || isAmount(data.kitDiscount))
+          && (!('individualDiscountTotal' in data) || isAmount(data.individualDiscountTotal))
+          && (!('installmentDiscountTotal' in data) || isAmount(data.installmentDiscountTotal))
+          && (!('installmentTerm' in data) || (data.installmentTerm is int && data.installmentTerm > 0))
+          && (!('installmentDiscount' in data) || (isAmount(data.installmentDiscount) && data.installmentDiscount <= 100))
+          && items is list && items.size() > 0
+          && isValidItemAt(items, 0) && isValidItemAt(items, 1) && isValidItemAt(items, 2);
+      }
+
       allow read: if isActiveStaff();
       allow create: if isActiveStaff()
         && request.resource.data.get('managerId', '') == request.auth.uid
         && request.resource.data.get('paymentMethod', '') in ['cash', 'bank_transfer', 'pos_terminal', 'm_plus', 'zero']
+        && hasValidNumbers(request.resource.data)
         && isServerTime('createdAt');
       allow update: if false;
       allow delete: if isAdmin();

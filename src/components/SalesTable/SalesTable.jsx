@@ -2,6 +2,7 @@ import Table from '../Table/Table';
 import { formatDate } from '../../utils/formatDate';
 import { formatPrice } from '../../utils/formatPrice';
 import { formatSalePaymentMethod } from '../../utils/getPaymentMethodLabel';
+import { calculateSaleUnitsCount } from '../../pages/Reports/utils/reportCalculations';
 import styles from './SalesTable.module.scss';
 
 const SalesTable = ({
@@ -42,10 +43,7 @@ const SalesTable = ({
       title: 'Позиций',
       dataIndex: 'items',
       key: 'items',
-      render: (items) => {
-        const totalQty = items ? items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
-        return `${totalQty} шт`;
-      }
+      render: (items) => `${calculateSaleUnitsCount({ items })} шт`
     },
     {
       title: 'Сумма',

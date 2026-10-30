@@ -4,6 +4,11 @@
  * @returns {string} The formatted price
  */
 export const formatPrice = (price) => {
+  // Only numbers and strings are parsed: objects/symbols from malformed documents
+  // would make parseFloat throw
+  if (typeof price !== 'number' && typeof price !== 'string') {
+    return '0';
+  }
   const parsed = parseFloat(price);
   if (isNaN(parsed)) {
     return '0';

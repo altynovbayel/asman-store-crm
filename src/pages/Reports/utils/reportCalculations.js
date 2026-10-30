@@ -1,5 +1,41 @@
 import { PRODUCT_TYPES } from '../../../constants/productTypes';
 import { PRODUCT_STATUS } from '../../../constants/productStatus';
+import { toSafeNumber, toSafeQuantity } from '../../../utils/safeNumber';
+
+/**
+ * Items of a stored sale as an array of item objects (old or malformed documents
+ * may hold a non-array `items` or empty entries).
+ * @param {Object} sale
+ * @returns {Array<Object>}
+ */
+export const getSaleItems = (sale) => (
+  Array.isArray(sale?.items)
+    ? sale.items.filter((item) => item !== null && typeof item === 'object' && !Array.isArray(item))
+    : []
+);
+
+/**
+ * Profit operands of a sold item from its historical snapshot. The field is chosen exactly
+ * as before (salePrice -> unitPrice -> price, discount -> itemDiscount, on the raw stored
+ * values); only the chosen value is then read safely: malformed values count as 0 instead
+ * of producing NaN or throwing.
+ * @param {Object} item
+ * @returns {{ salePrice: number, discount: number, purchasePrice: number, quantity: number }}
+ */
+export const getSaleItemSnapshot = (item) => ({
+  purchasePrice: toSafeNumber(item.purchasePrice !== undefined ? item.purchasePrice : 0),
+  salePrice: toSafeNumber(item.salePrice !== undefined ? item.salePrice : (item.unitPrice || item.price || 0)),
+  discount: toSafeNumber(item.discount !== undefined ? item.discount : (item.itemDiscount || 0)),
+  quantity: toSafeQuantity(item.quantity)
+});
+
+/**
+ * Total number of units in a sale (sum of item quantities).
+ * @param {Object} sale
+ * @returns {number}
+ */
+export const calculateSaleUnitsCount = (sale) =>
+  getSaleItems(sale).reduce((sum, item) => sum + toSafeQuantity(item.quantity), 0);
 
 /**
  * Calculates the total revenue from a list of sales.
@@ -8,7 +44,7 @@ import { PRODUCT_STATUS } from '../../../constants/productStatus';
  * @returns {number}
  */
 export const calculateRevenue = (sales = []) => {
-  return sales.reduce((sum, sale) => sum + (sale.grandTotal || 0), 0);
+  return sales.reduce((sum, sale) => sum + toSafeNumber(sale?.grandTotal), 0);
 };
 
 /**
@@ -18,13 +54,10 @@ export const calculateRevenue = (sales = []) => {
  * @returns {number}
  */
 export const calculateSingleSaleProfit = (sale) => {
-  const saleItems = sale.items || [];
-  return saleItems.reduce((itemProfitSum, item) => {
-    const purchasePrice = item.purchasePrice !== undefined ? item.purchasePrice : 0;
-    const salePrice = item.salePrice !== undefined ? item.salePrice : (item.unitPrice || item.price || 0);
-    const discount = item.discount !== undefined ? item.discount : (item.itemDiscount || 0);
+  return getSaleItems(sale).reduce((itemProfitSum, item) => {
+    const { salePrice, discount, purchasePrice, quantity } = getSaleItemSnapshot(item);
     const profitPerUnit = salePrice - discount - purchasePrice;
-    return itemProfitSum + (profitPerUnit * (item.quantity || 0));
+    return itemProfitSum + (profitPerUnit * quantity);
   }, 0);
 };
 
@@ -80,7 +113,7 @@ export const calculateEmployeeStats = (sales = []) => {
       };
     }
     
-    const revenue = sale.grandTotal || 0;
+    const revenue = toSafeNumber(sale.grandTotal);
     const profit = calculateSingleSaleProfit(sale);
     
     managerGroups[manager].salesCount += 1;
@@ -153,8 +186,8 @@ export const getUnitsInStock = (product) => {
     return product.status === PRODUCT_STATUS.AVAILABLE ? 1 : 0;
   }
   if (product.type === PRODUCT_TYPES.ACCESSORY) {
-    const qty = Number(product.quantity);
-    return Number.isFinite(qty) && qty > 0 ? qty : 0;
+    const qty = toSafeNumber(product.quantity);
+    return qty > 0 ? qty : 0;
   }
   return 0;
 };
@@ -182,8 +215,8 @@ export const calculateCurrentStock = (products = []) => {
 
 /** Price as a non-negative number; missing, non-numeric or negative prices count as 0. */
 const toStockPrice = (value) => {
-  const price = Number(value);
-  return Number.isFinite(price) && price > 0 ? price : 0;
+  const price = toSafeNumber(value);
+  return price > 0 ? price : 0;
 };
 
 /**
